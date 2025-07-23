@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackedHomes Content Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f8f8;
+            color: #000;
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: #000;
+            color: #fff;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-section {
+            margin-bottom: 40px;
+        }
+
+        .nav-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.5;
+            margin-bottom: 15px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            margin: 0 -15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background: #fff;
+            color: #000;
+        }
+
+        .nav-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .nav-item.active .nav-count {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid #000;
+            background: #fff;
+            font-weight: 600;
+            text-decoration: none;
+            color: black;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #000;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #000;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+            border-color: #333;
+        }
+
+        .filters {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-group {
+            flex: 1;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pill {
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .pill:hover {
+            border-color: #000;
+        }
+
+        .pill.active {
+            background: #000;
+            color: #fff;
+            border-color: #000;
+        }
+
+        .alert {
+            background: #000;
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .alert-icon {
+            font-size: 20px;
+        }
+
+        .articles-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .article {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .article-new::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #000;
+        }
+
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .article-title {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.3;
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .freshness-badge {
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .badge-new {
+            background: #000;
+            color: #fff;
+        }
+
+        .badge-recent {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .badge-old {
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #999;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .article-content {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .client-section {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .client-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .client-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .client-status {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .client-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .client-chip:hover {
+            border-color: #000;
+            background: #f8f8f8;
+        }
+
+        .client-chip.shared {
+            background: #f0f0f0;
+            border-color: #ddd;
+            opacity: 0.7;
+        }
+
+        .client-chip input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .article-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stats-card {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+        }
+
+        .stats-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+        }
+
+        /* .floating-refresh {
+            position: fixed;
+            bottom: 30px;
+            left: 310px;
+            background: #000;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+        }
+
+        .floating-refresh:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        } */
+
+        .clients-view {
+            padding: 20px 0;
+        }
+
+        .clients-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .clients-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .clients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .client-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .client-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .client-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .client-name {
+            margin: 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .stat-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .client-details {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .client-details p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .client-articles h4 {
+            margin: 0 0 10px 0;
+            color: #555;
+            font-size: 1em;
+        }
+
+        .client-article-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .client-article-item:last-child {
+            border-bottom: none;
+        }
+
+        .article-title-mini {
+            font-size: 0.85em;
+            color: #333;
+            flex: 1;
+            margin-right: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .article-date-mini {
+            font-size: 0.8em;
+            color: #999;
+            white-space: nowrap;
+        }
+
+        .more-articles,
+        .no-articles {
+            font-size: 0.85em;
+            color: #666;
+            font-style: italic;
+            margin: 10px 0 0 0;
+        }
+
+        .client-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .client-actions .btn {
+            flex: 1;
+            text-align: center;
+            font-size: 0.85em;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .no-clients {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo">StackedHomes</div>
+
+        <div class="nav-section category-section">
+            <div class="nav-title">Categories</div>
+            <div class="nav-item active">
+                <span>All Articles</span>
+                <span class="nav-count">14</span>
+            </div>
+            <div class="nav-item">
+                <span>HDB</span>
+                <span class="nav-count">3</span>
+            </div>
+            <div class="nav-item">
+                <span>Condo</span>
+                <span class="nav-count">5</span>
+            </div>
+            <div class="nav-item">
+                <span>Landed</span>
+                <span class="nav-count">2</span>
+            </div>
+            <div class="nav-item">
+                <span>Finance</span>
+                <span class="nav-count">4</span>
+            </div>
+        </div>
+
+        <div class="nav-section quick-filter-section">
+            <div class="nav-title">Quick Filters</div>
+            <div class="nav-item">
+                <span>📌 Today's Articles</span>
+                <span class="nav-count">8</span>
+            </div>
+            <div class="nav-item">
+                <span>⚡ Unshared</span>
+                <span class="nav-count">5</span>
+            </div>
+            <div class="nav-item">
+                <span>⚠️ Old Content</span>
+                <span class="nav-count">2</span>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Clients</div>
+            <div class="nav-item">
+                <span>All Clients</span>
+                <span class="nav-count">12</span>
+            </div>
+            <!-- <div class="nav-item">
+                <span>Active Today</span>
+                <span class="nav-count">4</span>
+            </div> -->
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div class="header-left">
+                <h1>Content Dashboard</h1>
+                <p class="header-subtitle">Monday, July 21, 2025 • Last updated: 2:30 PM</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn">Export Report</button>
+                <button class="btn btn-primary" onclick="addClient()">+ Add Client</button>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <div class="filter-label">Time Range</div>
+                <div class="filter-pills">
+                    <div class="pill active">Today</div>
+                    <div class="pill">3 Days</div>
+                    <div class="pill">Week</div>
+                    <div class="pill">Month</div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <div class="filter-label">Status</div>
+                <div class="filter-pills">
+                    <div class="pill active">All</div>
+                    <div class="pill">Unshared</div>
+                    <div class="pill">Shared</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="articles-grid">
+            <!-- New Article -->
+            <div class="article article-new">
+                <div class="article-header">
+                    <h3 class="article-title">HDB Resale Prices Hit New High in Mature Estates, Bishan Leads at $850K
+                    </h3>
+                    <span class="freshness-badge badge-new">New Today</span>
+                </div>
+
+                <div class="article-meta">
+                    <span>🏘️ HDB</span>
+                    <span>📅 2 hours ago</span>
+                    <span>✍️ Ryan Ong</span>
+                </div>
+
+                <p class="article-content">
+                    Resale prices for HDB flats in mature estates have reached unprecedented levels, with 5-room flats
+                    in Bishan and Toa Payoh crossing the $800,000 mark. Market analysts attribute this surge to limited
+                    supply and increased demand from upgraders seeking larger spaces post-pandemic.
+                </p>
+
+                <div class="client-section">
+                    <div class="client-header">
+                        <span class="client-title">Distribution Tracking</span>
+                        <span class="client-status">1 of 4 clients</span>
+                    </div>
+
+                    <div class="client-grid">
+                        <label class="client-chip">
+                            <input type="checkbox">
+                            <span>John Tan</span>
+                        </label>
+                        <label class="client-chip">
+                            <input type="checkbox">
+                            <span>Sarah Lim</span>
+                        </label>
+                        <label class="client-chip shared">
+                            <input type="checkbox" checked disabled>
+                            <span>David Chen ✓</span>
+                        </label>
+                        <label class="client-chip">
+                            <input type="checkbox">
+                            <span>Michelle Wong</span>
+                        </label>
+                    </div>
+
+                    <div class="article-actions">
+                        <button class="btn">📋 Copy Post</button>
+                        <button class="btn">🔗 View Article</button>
+                        <button class="btn btn-primary">✓ Mark Selected</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Article -->
+            <div class="article">
+                <div class="article-header">
+                    <h3 class="article-title">Tengah BTO Launch Sees Record Applications: Smart Living Attracts
+                        Millennials</h3>
+                    <span class="freshness-badge badge-recent">Yesterday</span>
+                </div>
+
+                <div class="article-meta">
+                    <span>🏘️ HDB</span>
+                    <span>📅 July 20, 2025</span>
+                    <span>✍️ Karamjit Kaur</span>
+                </div>
+
+                <p class="article-content">
+                    The latest BTO launch in Tengah has received overwhelming response with over 10,000 applications for
+                    just 1,200 units. The development's smart home capabilities and car-free town center concept have
+                    particularly appealed to younger buyers.
+                </p>
+
+                <div class="client-section">
+                    <div class="client-header">
+                        <span class="client-title">Distribution Tracking</span>
+                        <span class="client-status">2 of 4 clients</span>
+                    </div>
+
+                    <div class="client-grid">
+                        <label class="client-chip shared">
+                            <input type="checkbox" checked disabled>
+                            <span>John Tan ✓</span>
+                        </label>
+                        <label class="client-chip shared">
+                            <input type="checkbox" checked disabled>
+                            <span>Sarah Lim ✓</span>
+                        </label>
+                        <label class="client-chip">
+                            <input type="checkbox">
+                            <span>David Chen</span>
+                        </label>
+                        <label class="client-chip">
+                            <input type="checkbox">
+                            <span>Michelle Wong</span>
+                        </label>
+                    </div>
+
+                    <div class="article-actions">
+                        <button class="btn">📋 Copy Post</button>
+                        <button class="btn">🔗 View Article</button>
+                        <button class="btn btn-primary">✓ Mark Selected</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Old Article -->
+            <div class="article">
+                <div class="article-header">
+                    <h3 class="article-title">Enhanced CPF Housing Grants: First-Time Buyers to Receive Up to $80,000
+                    </h3>
+                    <span class="freshness-badge badge-old">5 Days Old</span>
+                </div>
+
+                <div class="article-meta">
+                    <span>💰 Finance</span>
+                    <span>📅 July 16, 2025</span>
+                    <span>✍️ Romesh Navaratnarajah</span>
+                </div>
+
+                <p class="article-content">
+                    The government has announced significant enhancements to CPF housing grants for first-time buyers,
+                    with eligible households able to receive up to $80,000 for new flats. These changes will take effect
+                    from August 2025.
+                </p>
+
+                <div class="client-section">
+                    <div class="client-header">
+                        <span class="client-title">Distribution Tracking</span>
+                        <span class="client-status">4 of 4 clients ✓</span>
+                    </div>
+
+                    <div class="client-grid">
+                        <label class="client-chip shared">
+                            <input type="checkbox" checked disabled>
+                            <span>John Tan ✓</span>
+                        </label>
+                        <label class="client-chip shared">
+                            <input type="checkbox" checked disabled>
+                            <span>Sarah Lim ✓</span>
+                        </label>
+                        <label class="client-chip shared">
+                            <input type="checkbox" checked disabled>
+                            <span>David Chen ✓</span>
+                        </label>
+                        <label class="client-chip shared">
+                            <input type="checkbox" checked disabled>
+                            <span>Michelle Wong ✓</span>
+                        </label>
+                    </div>
+
+                    <div class="article-actions">
+                        <button class="btn">📋 Copy Post</button>
+                        <button class="btn">🔗 View Article</button>
+                        <button class="btn" disabled>All Shared</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="stats-card">
+        <div class="stats-title">Today's Activity</div>
+        <div class="stat-item">
+            <span>New Articles</span>
+            <span class="stat-value">8</span>
+        </div>
+        <div class="stat-item">
+            <span>Shared</span>
+            <span class="stat-value">3</span>
+        </div>
+        <div class="stat-item">
+            <span>Pending</span>
+            <span class="stat-value">5</span>
+        </div>
+        <div class="stat-item">
+            <span>Clients Active</span>
+            <span class="stat-value">4</span>
+        </div>
+    </div> -->
+
+    <!-- <div class="floating-refresh">
+        🔄 Refresh Content
+    </div> -->
+</body>
+<script>
+    const article_container = document.querySelector('.articles-grid');
+    let allArticles = []; // Store all articles for filtering
+    let currentFilter = 'all'; // Track current active filter
+    let allClients = []; // Store all clients for filtering
+
+    (async () => {
+        await fetchClients();
+        await fetchArticles();
+        initializeFilters();
+    })();
+
+    async function fetchArticles() {
+        try {
+            const response = await fetch('/api/articles');
+            const data = await response.json();
+            allArticles = Array.isArray(data) ? data : []; // Ensure it's always an array
+            updateSidebarCounts(allArticles);
+            populateArticles(allArticles);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+            allArticles = []; // Set to empty array on error
+            populateArticles(allArticles);
+        }
+    }
+
+    function initializeFilters() {
+        // Category filters
+        const categoryItems = document.querySelectorAll('.category-section .nav-item');
+        categoryItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const categoryText = item.querySelector('span:first-child').textContent;
+                handleCategoryFilter(categoryText, item);
+            });
+        });
+
+        // Quick filters
+        const quickFilterItems = document.querySelectorAll('.quick-filter-section .nav-item');
+        quickFilterItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const filterText = item.querySelector('span:first-child').textContent;
+                handleQuickFilter(filterText, item);
+            });
+        });
+
+        // Time range filters
+        const timeRangePills = document.querySelectorAll('.filter-group:first-child .pill');
+        timeRangePills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                handleTimeRangeFilter(pill.textContent, pill);
+            });
+        });
+
+        // Status filters
+        const statusPills = document.querySelectorAll('.filter-group:last-child .pill');
+        statusPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                handleStatusFilter(pill.textContent, pill);
+            });
+        });
+
+        const clientItems = document.querySelectorAll('.nav-section:last-child .nav-item');
+        clientItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const clientText = item.querySelector('span:first-child').textContent;
+                handleClientFilter(clientText, item);
+            });
+        });
+    }
+
+    function handleClientFilter(filterText, element) {
+        setActiveNavItem(element);
+
+        if (filterText === 'All Clients') {
+            showClientsView();
+            updateMainHeader('All Clients');
+        }
+    }
+
+    async function showClientsView() {
+        // Hide filters and show clients view
+        hideFilters();
+
+        const articlesGrid = document.querySelector('.articles-grid');
+
+        // Create clients view HTML
+        const clientsViewHtml = `
+        <div class="clients-view">
+            <div class="clients-grid">
+                ${await generateClientsHtml()}
+            </div>
+        </div>
+    `;
+
+        articlesGrid.innerHTML = clientsViewHtml;
+    }
+    async function generateClientsHtml() {
+        if (!Array.isArray(allClients) || allClients.length === 0) {
+            return `
+            <div class="no-clients">
+                <p>No clients found. Add your first client to get started!</p>
+            </div>
+        `;
+        }
+
+        let clientsHtml = '';
+
+        for (const client of allClients) {
+            // Get articles associated with this client
+            const clientArticles = allArticles.filter(article => {
+                let assignedClients = [];
+                if (Array.isArray(article.clients)) {
+                    assignedClients = article.clients.map(id => id.toString());
+                } else if (typeof article.clients === 'string') {
+                    try {
+                        assignedClients = JSON.parse(article.clients).map(id => id.toString());
+                    } catch {
+                        assignedClients = [];
+                    }
+                }
+                return assignedClients.includes(client.id.toString());
+            });
+
+            clientsHtml += `
+            <div class="client-card">
+                <div class="client-header">
+                    <h3 class="client-name">${client.name}</h3>
+                    <div class="client-stats">
+                        <span class="stat-badge">${clientArticles.length} articles</span>
+                    </div>
+                </div>
+                
+                <div class="client-details">
+                    <p><strong>Client ID:</strong> ${client.id}</p>
+                    <p><strong>Created:</strong> ${client.created_at ? formatDate(client.created_at) : 'Unknown'}</p>
+                </div>
+
+                <div class="client-articles">
+                    <h4>Recent Articles (${Math.min(clientArticles.length, 3)})</h4>
+                    ${clientArticles.slice(0, 3).map(article => `
+                        <div class="client-article-item">
+                            <span class="article-title-mini">${article.title}</span>
+                            <span class="article-date-mini">${formatDate(article.date_created)}</span>
+                        </div>
+                    `).join('')}
+                    ${clientArticles.length > 3 ? `<p class="more-articles">+${clientArticles.length - 3} more articles</p>` : ''}
+                    ${clientArticles.length === 0 ? '<p class="no-articles">No articles shared yet</p>' : ''}
+                </div>
+
+                <div class="client-actions">
+                    <button class="btn btn-danger" onclick="deleteClient(${client.id}, '${client.name}')">Delete</button>
+                </div>
+            </div>
+        `;
+        }
+
+        return clientsHtml;
+    }
+
+    function handleCategoryFilter(category, element) {
+        // Show filters section
+        showFilters(); // Show filters when returning to articles view
+        setActiveNavItem(element);
+
+        let filteredArticles = [];
+
+        if (category === 'All Articles') {
+            filteredArticles = allArticles;
+            currentFilter = 'all';
+        } else {
+            filteredArticles = allArticles.filter(article => {
+                return article.topic && article.topic.toLowerCase() == category.toLowerCase()
+            });
+            currentFilter = category.toLowerCase();
+        }
+
+        populateArticles(filteredArticles);
+        updateMainHeader(category);
+    }
+
+    function handleQuickFilter(filterText, element) {
+        // Show filters section
+        showFilters();
+
+        setActiveNavItem(element);
+
+        let filteredArticles = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (filterText.includes("Today's Articles")) {
+            filteredArticles = allArticles.filter(article => {
+                if (!article.date_created) return false;
+                const articleDate = new Date(article.date_created);
+                articleDate.setHours(0, 0, 0, 0);
+                return articleDate.getTime() === today.getTime();
+            });
+            currentFilter = 'today';
+        } else if (filterText.includes('Unshared')) {
+            filteredArticles = allArticles.filter(article =>
+                !article.clients || article.clients === null ||
+                (Array.isArray(article.clients) && article.clients.length === 0)
+            );
+            currentFilter = 'unshared';
+        } else if (filterText.includes('Old Content')) {
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            filteredArticles = allArticles.filter(article => {
+                if (!article.date_created) return false;
+                const articleDate = new Date(article.date_created);
+                return articleDate < threeDaysAgo;
+            });
+            currentFilter = 'old';
+        } else {
+            filteredArticles = allArticles;
+        }
+
+        populateArticles(filteredArticles);
+        updateMainHeader(filterText.replace(/📌|⚡|⚠️/g, '').trim());
+    }
+
+    function handleTimeRangeFilter(timeRange, element) {
+        // Show filters section (in case it was hidden)
+        showFilters();
+
+        setActivePill(element, '.filter-group:first-child .pill');
+
+        const now = new Date();
+        let filteredArticles = [];
+
+        switch (timeRange) {
+            case 'Today':
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                filteredArticles = allArticles.filter(article => {
+                    if (!article.date_created) return false;
+                    const articleDate = new Date(article.date_created);
+                    articleDate.setHours(0, 0, 0, 0);
+                    return articleDate.getTime() === today.getTime();
+                });
+                break;
+            case '3 Days':
+                const threeDaysAgo = new Date();
+                threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+                filteredArticles = allArticles.filter(article => {
+                    if (!article.date_created) return false;
+                    const articleDate = new Date(article.date_created);
+                    return articleDate >= threeDaysAgo;
+                });
+                break;
+            case 'Week':
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                filteredArticles = allArticles.filter(article => {
+                    if (!article.date_created) return false;
+                    const articleDate = new Date(article.date_created);
+                    return articleDate >= weekAgo;
+                });
+                break;
+            case 'Month':
+                const monthAgo = new Date();
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                filteredArticles = allArticles.filter(article => {
+                    if (!article.date_created) return false;
+                    const articleDate = new Date(article.date_created);
+                    return articleDate >= monthAgo;
+                });
+                break;
+            default:
+                filteredArticles = allArticles;
+        }
+
+        populateArticles(filteredArticles);
+    }
+
+    function handleStatusFilter(status, element) {
+        // Show filters section (in case it was hidden)
+        showFilters();
+
+        setActivePill(element, '.filter-group:last-child .pill');
+
+        let filteredArticles = [];
+
+        switch (status) {
+            case 'Unshared':
+                filteredArticles = allArticles.filter(article =>
+                    !article.clients || article.clients === null ||
+                    (Array.isArray(article.clients) && article.clients.length === 0)
+                );
+                break;
+            case 'Shared':
+                filteredArticles = allArticles.filter(article =>
+                    article.clients && article.clients !== null &&
+                    Array.isArray(article.clients) && article.clients.length > 0
+                );
+                break;
+            default: // 'All'
+                filteredArticles = allArticles;
+        }
+
+        populateArticles(filteredArticles);
+    }
+
+    function showFilters() {
+        const filtersSection = document.querySelector('.filters');
+        if (filtersSection) {
+            filtersSection.style.display = 'flex';
+        }
+    }
+
+    function hideFilters() {
+        const filtersSection = document.querySelector('.filters');
+        if (filtersSection) {
+            filtersSection.style.display = 'none';
+        }
+    }
+    function setActiveNavItem(element) {
+        // Remove active class from all nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        // Add active class to clicked item
+        element.classList.add('active');
+    }
+
+    function setActivePill(element, selector) {
+        // Remove active class from pills in the same group
+        document.querySelectorAll(selector).forEach(pill => {
+            pill.classList.remove('active');
+        });
+        // Add active class to clicked pill
+        element.classList.add('active');
+    }
+
+    async function viewClientDetails(clientId) {
+        const client = allClients.find(c => c.id === clientId);
+        if (!client) return;
+
+        const clientArticles = allArticles.filter(article => {
+            let assignedClients = [];
+            if (Array.isArray(article.clients)) {
+                assignedClients = article.clients.map(id => id.toString());
+            } else if (typeof article.clients === 'string') {
+                try {
+                    assignedClients = JSON.parse(article.clients).map(id => id.toString());
+                } catch {
+                    assignedClients = [];
+                }
+            }
+            return assignedClients.includes(client.id.toString());
+        });
+
+        alert(`Client: ${client.name}\nID: ${client.id}\nAssociated Articles: ${clientArticles.length}\n\nArticles:\n${clientArticles.map(a => `• ${a.title}`).join('\n')}`);
+    }
+
+    async function editClient(clientId, currentName) {
+        const newName = prompt('Enter new client name:', currentName);
+        if (!newName || newName.length < 2) {
+            alert('Invalid name. Please enter at least 2 characters.');
+            return;
+        }
+
+        if (newName === currentName) {
+            return; // No change
+        }
+
+        try {
+            const response = await fetch(`/api/client/${clientId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: newName }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error updating client');
+            } else {
+                alert('Client updated successfully!');
+                await fetchClients();
+                showClientsView(); // Refresh the view
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+    async function deleteClient(clientId, clientName) {
+        if (!confirm(`Are you sure you want to delete client "${clientName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/client/${clientId}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error deleting client');
+            } else {
+                alert('Client deleted successfully!');
+                await fetchClients();
+                showClientsView(); // Refresh the view
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+    function updateSidebarCounts(articles) {
+        // Ensure articles is an array
+        if (!Array.isArray(articles)) {
+            articles = [];
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const threeDaysAgo = new Date();
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+        // Update category counts with null checks
+        const hdbCount = articles.filter(a => a.topic && a.topic.toLowerCase() === 'hdb').length;
+        const condoCount = articles.filter(a => a.topic && a.topic.toLowerCase() === 'condo').length;
+        const landedCount = articles.filter(a => a.topic && a.topic.toLowerCase() === 'landed').length;
+        const financeCount = articles.filter(a => a.topic && a.topic.toLowerCase() === 'finance').length;
+
+        // Update quick filter counts with null checks
+        const todayCount = articles.filter(a => {
+            if (!a.date_created) return false;
+            const articleDate = new Date(a.date_created);
+            articleDate.setHours(0, 0, 0, 0);
+            return articleDate.getTime() === today.getTime();
+        }).length;
+
+        const unsharedCount = articles.filter(a =>
+            !a.clients || a.clients === null ||
+            (Array.isArray(a.clients) && a.clients.length === 0)
+        ).length;
+
+        const oldCount = articles.filter(a => {
+            if (!a.date_created) return false;
+            const articleDate = new Date(a.date_created);
+            return articleDate < threeDaysAgo;
+        }).length;
+
+        // Update DOM elements safely
+        const navItems = document.querySelectorAll('.nav-item .nav-count');
+        if (navItems.length >= 8) {
+            navItems[0].textContent = articles.length; // All Articles
+            navItems[1].textContent = hdbCount; // HDB
+            navItems[2].textContent = condoCount; // Condo
+            navItems[3].textContent = landedCount; // Landed
+            navItems[4].textContent = financeCount; // Finance
+            navItems[5].textContent = todayCount; // Today's Articles
+            navItems[6].textContent = unsharedCount; // Unshared
+            navItems[7].textContent = oldCount; // Old Content
+        }
+
+        const clientCountElement = document.querySelector('.nav-section:last-child .nav-count');
+        if (clientCountElement && Array.isArray(allClients)) {
+            clientCountElement.textContent = allClients.length;
+        }
+    }
+
+    function updateMainHeader(filterName) {
+        const headerTitle = document.querySelector('.header-left h1');
+        if (headerTitle) {
+            if (filterName === 'All Articles') {
+                headerTitle.textContent = 'Content Dashboard';
+            } else {
+                headerTitle.textContent = `${filterName} Articles`;
+            }
+        }
+    }
+
+    function getArticleFreshness(dateCreated) {
+        if (!dateCreated) {
+            return { class: 'badge-old', text: 'Unknown Date' };
+        }
+
+        const now = new Date();
+        const articleDate = new Date(dateCreated);
+        const diffInHours = (now - articleDate) / (1000 * 60 * 60);
+
+        if (diffInHours < 24) {
+            return { class: 'badge-new', text: 'New Today' };
+        } else if (diffInHours < 72) {
+            return { class: 'badge-recent', text: 'Recent' };
+        } else {
+            const days = Math.floor(diffInHours / 24);
+            return { class: 'badge-old', text: `${days} Days Old` };
+        }
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return 'Unknown date';
+
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Invalid date';
+
+        const now = new Date();
+        const diffInHours = (now - date) / (1000 * 60 * 60);
+
+        if (diffInHours < 1) {
+            return 'Just now';
+        } else if (diffInHours < 24) {
+            return `${Math.floor(diffInHours)} hours ago`;
+        } else {
+            return date.toLocaleDateString('en-SG', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    }
+
+    function populateArticles(articles) {
+        // Ensure articles is an array
+        if (!Array.isArray(articles)) {
+            console.error('populateArticles called with non-array:', articles)
+            articles = []
+        }
+
+        article_container.innerHTML = ''
+
+        if (articles.length === 0) {
+            article_container.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: #666;">
+        <p>No articles found for the selected filter.</p>
+      </div>
+    `
+            return
+        }
+
+        articles.forEach((article) => {
+            if (!article) return // Skip null/undefined articles
+
+            const freshness = getArticleFreshness(article.date_created)
+            const formattedDate = formatDate(article.date_created)
+
+            // Normalize the article.clients field to an array of strings
+            let assignedClients = []
+            if (Array.isArray(article.clients)) {
+                assignedClients = article.clients.map((id) => id.toString())
+            } else if (typeof article.clients === 'string') {
+                try {
+                    assignedClients = JSON.parse(article.clients).map((id) =>
+                        id.toString()
+                    )
+                } catch {
+                    assignedClients = []
+                }
+            }
+
+            const clientHtml = () => {
+                let temphtml = ''
+                allClients.forEach((client) => {
+                    const isChecked = assignedClients.includes(client.id.toString())
+                    temphtml += `
+          <label class="client-chip">
+            <input
+              onchange="handleClientCheckbox(this)"
+              client-id="${client.id}"
+              article-id="${article.id}"
+              type="checkbox"
+              ${isChecked ? 'checked' : ''}
+            >
+            <span>${client.name}</span>
+          </label>
+        `
+                })
+                return temphtml
+            }
+
+            const articleHtml = `
+      <div class="article ${freshness.class === 'badge-new' ? 'article-new' : ''
+                }">
+        <div class="article-header">
+          <h3 class="article-title">${article.title || 'Untitled'}</h3>
+          <span class="freshness-badge ${freshness.class}">
+            ${freshness.text}
+          </span>
+        </div>
+
+        <div class="article-meta">
+          <span>🏘️ ${article.topic || 'Unknown'}</span>
+          <span>📅 ${formattedDate}</span>
+        </div>
+
+        <p class="article-content">
+          ${article.description || 'No description available'}
+        </p>
+
+        <div class="client-section">
+          <div class="client-header">
+            <span class="client-title">Distribution Tracking</span>
+          </div>
+
+          <div class="client-grid">
+            ${clientHtml()}
+          </div>
+
+          <div class="article-actions">
+            <div class="copy-container">
+              <button
+                class="btn copy-post-btn"
+                data-description="title=${article.title},description=${article.description || 'No description available'
+                }"
+              >📋 Copy Post</button>
+              <span
+                class="copy-status"
+                style="display:none; color:green; margin-left:8px;"
+              >Copied!</span>
+            </div>
+            <a
+              href="${article.unique_url || '#'}"
+              target="_blank"
+              class="btn"
+            >🔗 View Article</a>
+          </div>
+        </div>
+      </div>
+    `
+            article_container.innerHTML += articleHtml
+        })
+
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.classList.contains('copy-post-btn')) {
+                const description = e.target.getAttribute('data-description')
+                navigator.clipboard.writeText(description).then(() => {
+                    const statusSpan = e.target.nextElementSibling
+                    statusSpan.style.display = 'inline'
+                    statusSpan.textContent = 'Copied!'
+                    setTimeout(() => {
+                        statusSpan.style.display = 'none'
+                    }, 2000)
+                })
+            }
+        })
+    } async function addClient() {
+        const name = prompt('Enter client name:');
+        if (!name || name.length < 2) {
+            alert('Invalid name. Please enter at least 2 characters.');
+            return;
+        }
+        try {
+            const response = await fetch('/api/client', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error creating client');
+            } else {
+                alert(data.message);
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+
+    async function fetchClients() {
+        try {
+            const response = await fetch('/api/clients');
+            const data = await response.json();
+            allClients = Array.isArray(data) ? data : [];
+            return data;
+        } catch (error) {
+            console.error('Error fetching clients:', error);
+            return [];
+        }
+    }
+
+
+    async function handleClientCheckbox(input) {
+        const articleId = input.getAttribute('article-id')
+        const clientId = input.getAttribute('client-id')
+        // Disable while request is in flight
+        input.disabled = true
+
+        try {
+            const res = await fetch(
+                `/api/client/${clientId}/article/${articleId}`,
+                { method: 'POST' }
+            )
+            if (!res.ok) throw new Error(res.statusText)
+
+            const { result } = await res.json()
+            if (!result) {
+                input.checked = !input.checked
+                alert('Failed to update relation')
+            }
+        } catch (error) {
+            console.error('Error updating relation:', error)
+            input.checked = !input.checked
+            alert('Error updating relation')
+        } finally {
+            input.disabled = false
+        }
+    }
+
+    // src/utils/api.js
+    async function deleteClient(clientId, clientName) {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete client "${clientName}"?`
+        );
+        if (!confirmed) return false;
+
+        try {
+            const res = await fetch(`/api/client/${clientId}`, {
+                method: 'DELETE'
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || 'Failed to delete client');
+                return false;
+            }
+
+            alert(data.message || 'Client deleted successfully');
+            // remove from DOM
+            window.location.reload();
+            return true;
+        } catch (err) {
+            console.error('Network error:', err);
+            alert('Network error while deleting client');
+            return false;
+        }
+    }
+</script>
+
+</html>
