@@ -611,7 +611,7 @@
                 <p class="header-subtitle">Monday, July 21, 2025 • Last updated: 2:30 PM</p>
             </div>
             <div class="header-actions">
-                <button class="btn">Export Report</button>
+                <button class="btn" onclick="exportToCSV()">Export Report</button>
                 <button class="btn btn-primary" onclick="addClient()">+ Add Client</button>
             </div>
         </div>
@@ -620,7 +620,8 @@
             <div class="filter-group">
                 <div class="filter-label">Time Range</div>
                 <div class="filter-pills">
-                    <div class="pill active">Today</div>
+                    <div class="pill active">All Time</div>
+                    <div class="pill">Today</div>
                     <div class="pill">3 Days</div>
                     <div class="pill">Week</div>
                     <div class="pill">Month</div>
@@ -1053,6 +1054,9 @@
         let filteredArticles = [];
 
         switch (timeRange) {
+            case 'All Time':
+                filteredArticles = allArticles;
+                break;
             case 'Today':
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -1349,6 +1353,13 @@
             articles = []
         }
 
+        // Sort articles by date_created (newest to oldest)
+        articles.sort((a, b) => {
+            const dateA = a.date_created ? new Date(a.date_created) : new Date(0);
+            const dateB = b.date_created ? new Date(b.date_created) : new Date(0);
+            return dateB - dateA; // Newest first
+        });
+
         article_container.innerHTML = ''
 
         if (articles.length === 0) {
@@ -1560,6 +1571,87 @@
             console.error('Network error:', err);
             alert('Network error while deleting client');
             return false;
+        }
+    }
+
+    // CSV Export functionality
+    function exportToCSV() {
+        if (!Array.isArray(allArticles) || allArticles.length === 0) {
+            alert('No articles available to export');
+            return;
+        }
+
+        // Sort articles by date (newest to oldest) for export
+        const sortedArticles = [...allArticles].sort((a, b) => {
+            const dateA = a.date_created ? new Date(a.date_created) : new Date(0);
+            const dateB = b.date_created ? new Date(b.date_created) : new Date(0);
+            return dateB - dateA;
+        });
+
+        // CSV headers
+        const headers = [
+            'Title',
+            'Description', 
+            'Topic',
+            'Date Created',
+            'URL',
+            'Assigned Clients'
+        ];
+
+        // Convert articles to CSV format
+        const csvData = sortedArticles.map(article => {
+            // Get assigned client names
+            let assignedClientNames = [];
+            if (Array.isArray(article.clients)) {
+                assignedClientNames = article.clients.map(clientId => {
+                    const client = allClients.find(c => c.id.toString() === clientId.toString());
+                    return client ? client.name : `Client ID: ${clientId}`;
+                });
+            } else if (typeof article.clients === 'string') {
+                try {
+                    const clientIds = JSON.parse(article.clients);
+                    assignedClientNames = clientIds.map(clientId => {
+                        const client = allClients.find(c => c.id.toString() === clientId.toString());
+                        return client ? client.name : `Client ID: ${clientId}`;
+                    });
+                } catch {
+                    assignedClientNames = [];
+                }
+            }
+
+            return [
+                `"${(article.title || '').replace(/"/g, '""')}"`,
+                `"${(article.description || '').replace(/"/g, '""')}"`,
+                `"${(article.topic || '').replace(/"/g, '""')}"`,
+                `"${article.date_created ? formatDate(article.date_created) : ''}"`,
+                `"${(article.unique_url || '').replace(/"/g, '""')}"`,
+                `"${assignedClientNames.join(', ').replace(/"/g, '""')}"`
+            ].join(',');
+        });
+
+        // Combine headers and data
+        const csvContent = [headers.join(','), ...csvData].join('\n');
+
+        // Create and download the file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            
+            // Generate filename with current date
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+            link.setAttribute('download', `news_report_${dateStr}.csv`);
+            
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            // Fallback for older browsers
+            alert('CSV export is not supported in this browser. Please use a modern browser.');
         }
     }
 </script>
