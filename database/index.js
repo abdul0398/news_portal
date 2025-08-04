@@ -13,50 +13,60 @@ const pool = mysql.createPool({
 
 export async function saveNewsToDB() {
   const topics = ["HDB", "Condo", "Landed", "Finance"];
+  const sources = ["https://stackedhomes.com/", "https://www.edgeprop.sg/"];
+
   for (const topic of topics) {
-    const response = await fetchNews(
-      `Only Fetch From: https://stackedhomes.com/ Give 10 latest news from the last 7 days on the topic of ${topic} in singapore. Return the result as a JSON array with each object containing "title", "description", "date", "source" and "canonical_url"`
-    );
-    const jsonArrayMatch = response.match(/\[\s*{[\s\S]*?}\s*\]/);
+    for (const source of sources) {
+      const response = await fetchNews(
+        `Only Fetch From: ${source} Give 10 latest news from the last 7 days on the topic of ${topic} in singapore. Return the result as a JSON array with each object containing "title", "description", "date", "source" and "canonical_url"`
+      );
 
-    if (!jsonArrayMatch) {
-      console.error("No JSON array found in response.");
-      return;
-    }
+      const jsonArrayMatch = response.match(/\[\s*{[\s\S]*?}\s*\]/);
 
-    let newsList;
-    try {
-      newsList = JSON.parse(jsonArrayMatch[0]);
-
-      for (const news of newsList) {
-        const { title, description, date, source, canonical_url } = news;
-
-        // Check if unique_url already exists
-        const [existingRows] = await pool.query(
-          "SELECT id FROM news_articles WHERE unique_url = ? LIMIT 1",
-          [canonical_url]
+      if (!jsonArrayMatch) {
+        console.error(
+          `No JSON array found in response for ${source} - ${topic}.`
         );
-
-        if (existingRows.length > 0) {
-          console.log(`Skipping duplicate: ${canonical_url}`);
-          continue; // Skip this news item
-        }
-
-        const sql =
-          "INSERT INTO news_articles (title, description, date_created, topic, source, unique_url) VALUES (?, ?, ?, ?, ?, ?)";
-        const values = [
-          title,
-          description,
-          new Date(date || Date.now()),
-          topic,
-          source,
-          canonical_url,
-        ];
-        await pool.query(sql, values);
+        continue;
       }
-    } catch (e) {
-      console.error("Failed to parse extracted JSON array:", e);
-      return;
+
+      let newsList;
+      try {
+        newsList = JSON.parse(jsonArrayMatch[0]);
+
+        for (const news of newsList) {
+          const { title, description, date, source, canonical_url } = news;
+
+          // Check if unique_url already exists
+          const [existingRows] = await pool.query(
+            "SELECT id FROM news_articles WHERE unique_url = ? LIMIT 1",
+            [canonical_url]
+          );
+
+          if (existingRows.length > 0) {
+            console.log(`Skipping duplicate: ${canonical_url}`);
+            continue; // Skip this news item
+          }
+
+          const sql =
+            "INSERT INTO news_articles (title, description, date_created, topic, source, unique_url) VALUES (?, ?, ?, ?, ?, ?)";
+          const values = [
+            title,
+            description,
+            new Date(date || Date.now()),
+            topic,
+            source,
+            canonical_url,
+          ];
+          await pool.query(sql, values);
+        }
+      } catch (e) {
+        console.error(
+          `Failed to parse extracted JSON array for ${source} - ${topic}:`,
+          e
+        );
+        continue;
+      }
     }
   }
 }

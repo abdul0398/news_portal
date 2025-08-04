@@ -16,7 +16,6 @@ app.use("/", viewsRouter);
 app.use("/api", apiRouter);
 app.listen(port, async () => {
   console.log(`Server is running on port ${port}`);
-  cron.schedule("0 0 * * *", async () => {
-    await saveNewsToDB();
-  });
+  cron.schedule("0 0 * * *", async () => {});
+  await saveNewsToDB();
 });
