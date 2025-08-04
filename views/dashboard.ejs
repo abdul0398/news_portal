@@ -1574,6 +1574,52 @@
         }
     }
 
+    // Remove unwanted travel destinations from filters
+    function removeUnwantedFromFilters(articles, filter) {
+        if (filter !== 'Travel') {
+            return articles;
+        }
+
+        const unwantedTravelDestinations = [
+            'Amalfi Coast',
+            'Amsterdam', 
+            'Antigua',
+            'Antiparos,greece',
+            'Arosa, switzerland',
+            'Ascona, switzerland',
+            'Atrani, Italy',
+            'Balearic islands',
+            'Beijing',
+            'California',
+            'Corfu',
+            'Dubai',
+            'French Riviera',
+            'Lake Como',
+            'Miami',
+            'Mukonos',
+            'Provence',
+            'Saint-Tropez',
+            'Santorini',
+            'Seychelles',
+            'Turkey',
+            'Tuscany'
+        ];
+
+        return articles.filter(article => {
+            if (!article.title && !article.description) {
+                return true;
+            }
+
+            const titleText = (article.title || '').toLowerCase();
+            const descriptionText = (article.description || '').toLowerCase();
+            const combinedText = titleText + ' ' + descriptionText;
+
+            return !unwantedTravelDestinations.some(destination => 
+                combinedText.includes(destination.toLowerCase())
+            );
+        });
+    }
+
     // CSV Export functionality
     function exportToCSV() {
         if (!Array.isArray(allArticles) || allArticles.length === 0) {
