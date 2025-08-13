@@ -544,6 +544,204 @@
             color: #666;
             grid-column: 1 / -1;
         }
+
+        .prompts-view {
+            padding: 20px 0;
+        }
+
+        .prompts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .prompts-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .prompts-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .prompt-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .prompt-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .prompt-card.active {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .prompt-name {
+            margin: 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .active-badge {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .prompt-template {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+            color: #333;
+            border-left: 3px solid #007bff;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .prompt-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .prompt-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .prompt-actions .btn {
+            flex: 1;
+            text-align: center;
+            font-size: 0.85em;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            resize: vertical;
+        }
+
+        .form-group .help-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
     </style>
 </head>
 
@@ -602,6 +800,22 @@
                 <span class="nav-count">4</span>
             </div> -->
         </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Configuration</div>
+            <div class="nav-item">
+                <span>Manage Prompts</span>
+                <span class="nav-count" id="prompt-count">0</span>
+            </div>
+            <div class="nav-item">
+                <span>Manage Sources</span>
+                <span class="nav-count" id="source-count">0</span>
+            </div>
+            <div class="nav-item">
+                <span>Manage Topics</span>
+                <span class="nav-count" id="topic-count">0</span>
+            </div>
+        </div>
     </div>
 
     <div class="main-content">
@@ -612,6 +826,9 @@
             </div>
             <div class="header-actions">
                 <button class="btn" onclick="exportToCSV()">Export Report</button>
+                <button class="btn" onclick="addPrompt()" id="add-prompt-btn" style="display:none;">+ Add Prompt</button>
+                <button class="btn" onclick="addSource()" id="add-source-btn" style="display:none;">+ Add Source</button>
+                <button class="btn" onclick="addTopic()" id="add-topic-btn" style="display:none;">+ Add Topic</button>
                 <button class="btn btn-primary" onclick="addClient()">+ Add Client</button>
             </div>
         </div>
@@ -822,15 +1039,114 @@
     <!-- <div class="floating-refresh">
         🔄 Refresh Content
     </div> -->
+
+    <!-- Prompt Modal -->
+    <div id="promptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="promptModalTitle">Add New Prompt</h3>
+                <span class="close" onclick="closePromptModal()">&times;</span>
+            </div>
+            <form id="promptForm">
+                <div class="form-group">
+                    <label for="promptName">Prompt Name</label>
+                    <input type="text" id="promptName" name="name" required>
+                    <div class="help-text">Give your prompt a descriptive name</div>
+                </div>
+                <div class="form-group">
+                    <label for="promptTemplate">Prompt Template</label>
+                    <textarea id="promptTemplate" name="template" required placeholder="Search for the latest news from {source} about {topic} in Singapore from the last 7 days. Return EXACTLY 10 news articles as a JSON array. Each article must be a JSON object with these exact fields: &quot;title&quot;, &quot;description&quot;, &quot;date&quot;, &quot;source&quot;, &quot;canonical_url&quot;. Return ONLY the JSON array, no additional text or explanation."></textarea>
+                    <div class="help-text">Use {source} and {topic} as placeholders. <strong>Important:</strong> Always include instructions to return JSON format for reliable data processing.</div>
+                </div>
+                <div class="form-group">
+                    <label for="promptDescription">Description (Optional)</label>
+                    <textarea id="promptDescription" name="description" placeholder="Describe what this prompt is for..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closePromptModal()">Cancel</button>
+                    <button type="button" class="btn" onclick="testPrompt()" id="testPromptBtn">Test Prompt</button>
+                    <button type="submit" class="btn btn-primary">Save Prompt</button>
+                </div>
+                <div id="testResults" style="display:none; margin-top:20px; padding:15px; background:#f8f9fa; border-radius:6px;">
+                    <h4>Test Results:</h4>
+                    <div id="testResultsContent"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Source Modal -->
+    <div id="sourceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="sourceModalTitle">Add New Source</h3>
+                <span class="close" onclick="closeSourceModal()">&times;</span>
+            </div>
+            <form id="sourceForm">
+                <div class="form-group">
+                    <label for="sourceName">Source Name</label>
+                    <input type="text" id="sourceName" name="name" required>
+                    <div class="help-text">Give your source a descriptive name</div>
+                </div>
+                <div class="form-group">
+                    <label for="sourceUrl">Source URL</label>
+                    <input type="url" id="sourceUrl" name="url" required placeholder="https://example.com/">
+                    <div class="help-text">The website URL to fetch news from</div>
+                </div>
+                <div class="form-group">
+                    <label for="sourceDescription">Description (Optional)</label>
+                    <textarea id="sourceDescription" name="description" placeholder="Describe what type of content this source provides..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeSourceModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Source</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Topic Modal -->
+    <div id="topicModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="topicModalTitle">Add New Topic</h3>
+                <span class="close" onclick="closeTopicModal()">&times;</span>
+            </div>
+            <form id="topicForm">
+                <div class="form-group">
+                    <label for="topicName">Topic Name</label>
+                    <input type="text" id="topicName" name="name" required>
+                    <div class="help-text">Enter a topic to search for in news articles</div>
+                </div>
+                <div class="form-group">
+                    <label for="topicDescription">Description (Optional)</label>
+                    <textarea id="topicDescription" name="description" placeholder="Describe what this topic covers..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" onclick="closeTopicModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Topic</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 <script>
     const article_container = document.querySelector('.articles-grid');
     let allArticles = []; // Store all articles for filtering
     let currentFilter = 'all'; // Track current active filter
     let allClients = []; // Store all clients for filtering
+    let allPrompts = []; // Store all prompts
+    let allSources = []; // Store all sources
+    let allTopics = []; // Store all topics
+    let editingPromptId = null; // Track if we're editing an existing prompt
+    let editingSourceId = null; // Track if we're editing an existing source
+    let editingTopicId = null; // Track if we're editing an existing topic
 
     (async () => {
         await fetchClients();
+        await fetchPrompts();
+        await fetchSources();
+        await fetchTopics();
         await fetchArticles();
         initializeFilters();
     })();
@@ -884,11 +1200,20 @@
             });
         });
 
-        const clientItems = document.querySelectorAll('.nav-section:last-child .nav-item');
+        const clientItems = document.querySelectorAll('.nav-section:nth-last-child(2) .nav-item');
         clientItems.forEach(item => {
             item.addEventListener('click', () => {
                 const clientText = item.querySelector('span:first-child').textContent;
                 handleClientFilter(clientText, item);
+            });
+        });
+
+        // Configuration navigation
+        const configItems = document.querySelectorAll('.nav-section:last-child .nav-item');
+        configItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const configText = item.querySelector('span:first-child').textContent;
+                handleConfigFilter(configText, item);
             });
         });
     }
@@ -900,6 +1225,31 @@
             showClientsView();
             updateMainHeader('All Clients');
         }
+    }
+
+    function handleConfigFilter(filterText, element) {
+        setActiveNavItem(element);
+        hideAllActionButtons();
+
+        if (filterText === 'Manage Prompts') {
+            showPromptsView();
+            updateMainHeader('Manage Prompts');
+            document.getElementById('add-prompt-btn').style.display = 'inline-block';
+        } else if (filterText === 'Manage Sources') {
+            showSourcesView();
+            updateMainHeader('Manage Sources');
+            document.getElementById('add-source-btn').style.display = 'inline-block';
+        } else if (filterText === 'Manage Topics') {
+            showTopicsView();
+            updateMainHeader('Manage Topics');
+            document.getElementById('add-topic-btn').style.display = 'inline-block';
+        }
+    }
+
+    function hideAllActionButtons() {
+        document.getElementById('add-prompt-btn').style.display = 'none';
+        document.getElementById('add-source-btn').style.display = 'none';
+        document.getElementById('add-topic-btn').style.display = 'none';
     }
 
     async function showClientsView() {
@@ -986,6 +1336,7 @@
         // Show filters section
         showFilters(); // Show filters when returning to articles view
         setActiveNavItem(element);
+        hideAllActionButtons(); // Hide config action buttons
 
         let filteredArticles = [];
 
@@ -1700,6 +2051,599 @@
             alert('CSV export is not supported in this browser. Please use a modern browser.');
         }
     }
+
+    // Prompt management functions
+    async function fetchPrompts() {
+        try {
+            const response = await fetch('/api/prompts');
+            const data = await response.json();
+            allPrompts = Array.isArray(data) ? data : [];
+            updatePromptCount();
+            return data;
+        } catch (error) {
+            console.error('Error fetching prompts:', error);
+            allPrompts = [];
+            return [];
+        }
+    }
+
+    function updatePromptCount() {
+        const promptCountElement = document.getElementById('prompt-count');
+        if (promptCountElement) {
+            promptCountElement.textContent = allPrompts.length;
+        }
+    }
+
+    async function showPromptsView() {
+        hideFilters();
+        const articlesGrid = document.querySelector('.articles-grid');
+        const promptsViewHtml = `
+            <div class="prompts-view">
+                <div class="prompts-grid">
+                    ${await generatePromptsHtml()}
+                </div>
+            </div>
+        `;
+        articlesGrid.innerHTML = promptsViewHtml;
+    }
+
+    async function generatePromptsHtml() {
+        if (!Array.isArray(allPrompts) || allPrompts.length === 0) {
+            return `
+                <div class="no-clients">
+                    <p>No prompts found. Add your first prompt to get started!</p>
+                </div>
+            `;
+        }
+
+        let promptsHtml = '';
+        for (const prompt of allPrompts) {
+            const isActive = prompt.is_active;
+            promptsHtml += `
+                <div class="prompt-card ${isActive ? 'active' : ''}">
+                    <div class="prompt-header">
+                        <h3 class="prompt-name">${prompt.name}</h3>
+                        ${isActive ? '<span class="active-badge">Active</span>' : ''}
+                    </div>
+                    
+                    ${prompt.description ? `<div class="prompt-description">${prompt.description}</div>` : ''}
+                    
+                    <div class="prompt-template">${prompt.template}</div>
+
+                    <div class="prompt-actions">
+                        ${!isActive ? `<button class="btn btn-success" onclick="activatePrompt(${prompt.id})">Activate</button>` : '<button class="btn" disabled>Currently Active</button>'}
+                        <button class="btn" onclick="editPrompt(${prompt.id})">Edit</button>
+                        <button class="btn btn-danger" onclick="deletePrompt(${prompt.id}, '${prompt.name}')">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+        return promptsHtml;
+    }
+
+    function addPrompt() {
+        editingPromptId = null;
+        document.getElementById('promptModalTitle').textContent = 'Add New Prompt';
+        document.getElementById('promptForm').reset();
+        document.getElementById('promptModal').style.display = 'block';
+    }
+
+    function editPrompt(promptId) {
+        const prompt = allPrompts.find(p => p.id === promptId);
+        if (!prompt) return;
+
+        editingPromptId = promptId;
+        document.getElementById('promptModalTitle').textContent = 'Edit Prompt';
+        document.getElementById('promptName').value = prompt.name;
+        document.getElementById('promptTemplate').value = prompt.template;
+        document.getElementById('promptDescription').value = prompt.description || '';
+        document.getElementById('promptModal').style.display = 'block';
+    }
+
+    function closePromptModal() {
+        document.getElementById('promptModal').style.display = 'none';
+        document.getElementById('testResults').style.display = 'none';
+        editingPromptId = null;
+    }
+
+    async function testPrompt() {
+        const template = document.getElementById('promptTemplate').value;
+        if (!template.trim()) {
+            alert('Please enter a prompt template first.');
+            return;
+        }
+
+        const testBtn = document.getElementById('testPromptBtn');
+        const testResults = document.getElementById('testResults');
+        const testResultsContent = document.getElementById('testResultsContent');
+
+        testBtn.disabled = true;
+        testBtn.textContent = 'Testing...';
+        testResults.style.display = 'block';
+        testResultsContent.innerHTML = '<div style="color:#666;">Testing prompt with sample data...</div>';
+
+        try {
+            const response = await fetch('/api/prompts/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ template }),
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                testResultsContent.innerHTML = `
+                    <div style="color:#28a745; margin-bottom:10px;">✅ Prompt test successful!</div>
+                    <div><strong>Articles found:</strong> ${data.articlesFound}</div>
+                    ${data.sampleArticles && data.sampleArticles.length > 0 ? `
+                        <div style="margin-top:10px;"><strong>Sample articles:</strong></div>
+                        ${data.sampleArticles.map(article => `
+                            <div style="margin:5px 0; padding:8px; background:white; border-radius:4px; font-size:0.9em;">
+                                <div><strong>${article.title}</strong></div>
+                                <div style="color:#666;">${article.description}</div>
+                            </div>
+                        `).join('')}
+                    ` : ''}
+                `;
+            } else {
+                testResultsContent.innerHTML = `
+                    <div style="color:#dc3545; margin-bottom:10px;">❌ Prompt test failed</div>
+                    <div><strong>Error:</strong> ${data.message}</div>
+                    <div style="margin-top:10px; font-size:0.9em; color:#666;">
+                        Try adding explicit JSON formatting instructions to your prompt.
+                    </div>
+                `;
+            }
+        } catch (error) {
+            testResultsContent.innerHTML = `
+                <div style="color:#dc3545; margin-bottom:10px;">❌ Test request failed</div>
+                <div><strong>Error:</strong> ${error.message}</div>
+            `;
+        } finally {
+            testBtn.disabled = false;
+            testBtn.textContent = 'Test Prompt';
+        }
+    }
+
+    async function activatePrompt(promptId) {
+        try {
+            const response = await fetch(`/api/prompts/${promptId}/activate`, {
+                method: 'POST',
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error activating prompt');
+            } else {
+                alert('Prompt activated successfully!');
+                await fetchPrompts();
+                showPromptsView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+    async function deletePrompt(promptId, promptName) {
+        if (!confirm(`Are you sure you want to delete prompt "${promptName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/prompts/${promptId}`, {
+                method: 'DELETE',
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error deleting prompt');
+            } else {
+                alert('Prompt deleted successfully!');
+                await fetchPrompts();
+                showPromptsView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+    // Handle prompt form submission
+    document.getElementById('promptForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const promptData = {
+            name: formData.get('name'),
+            template: formData.get('template'),
+            description: formData.get('description'),
+        };
+
+        try {
+            const url = editingPromptId ? `/api/prompts/${editingPromptId}` : '/api/prompts';
+            const method = editingPromptId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(promptData),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error saving prompt');
+            } else {
+                alert(editingPromptId ? 'Prompt updated successfully!' : 'Prompt created successfully!');
+                closePromptModal();
+                await fetchPrompts();
+                showPromptsView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('promptModal');
+        if (e.target === modal) {
+            closePromptModal();
+        }
+        const sourceModal = document.getElementById('sourceModal');
+        if (e.target === sourceModal) {
+            closeSourceModal();
+        }
+        const topicModal = document.getElementById('topicModal');
+        if (e.target === topicModal) {
+            closeTopicModal();
+        }
+    });
+
+    // Sources management functions
+    async function fetchSources() {
+        try {
+            const response = await fetch('/api/sources');
+            const data = await response.json();
+            allSources = Array.isArray(data) ? data : [];
+            updateSourceCount();
+            return data;
+        } catch (error) {
+            console.error('Error fetching sources:', error);
+            allSources = [];
+            return [];
+        }
+    }
+
+    function updateSourceCount() {
+        const sourceCountElement = document.getElementById('source-count');
+        if (sourceCountElement) {
+            sourceCountElement.textContent = allSources.length;
+        }
+    }
+
+    async function showSourcesView() {
+        hideFilters();
+        const articlesGrid = document.querySelector('.articles-grid');
+        const sourcesViewHtml = `
+            <div class="prompts-view">
+                <div class="prompts-grid">
+                    ${await generateSourcesHtml()}
+                </div>
+            </div>
+        `;
+        articlesGrid.innerHTML = sourcesViewHtml;
+    }
+
+    async function generateSourcesHtml() {
+        if (!Array.isArray(allSources) || allSources.length === 0) {
+            return `
+                <div class="no-clients">
+                    <p>No sources found. Add your first source to get started!</p>
+                </div>
+            `;
+        }
+
+        let sourcesHtml = '';
+        for (const source of allSources) {
+            const isActive = source.is_active;
+            sourcesHtml += `
+                <div class="prompt-card ${isActive ? 'active' : ''}">
+                    <div class="prompt-header">
+                        <h3 class="prompt-name">${source.name}</h3>
+                        ${isActive ? '<span class="active-badge">Active</span>' : '<span class="stat-badge">Inactive</span>'}
+                    </div>
+                    
+                    ${source.description ? `<div class="prompt-description">${source.description}</div>` : ''}
+                    
+                    <div class="prompt-template">${source.url}</div>
+
+                    <div class="prompt-actions">
+                        <button class="btn ${isActive ? 'btn-danger' : 'btn-success'}" onclick="toggleSource(${source.id})">${isActive ? 'Deactivate' : 'Activate'}</button>
+                        <button class="btn" onclick="editSource(${source.id})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteSource(${source.id}, '${source.name}')">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+        return sourcesHtml;
+    }
+
+    function addSource() {
+        editingSourceId = null;
+        document.getElementById('sourceModalTitle').textContent = 'Add New Source';
+        document.getElementById('sourceForm').reset();
+        document.getElementById('sourceModal').style.display = 'block';
+    }
+
+    function editSource(sourceId) {
+        const source = allSources.find(s => s.id === sourceId);
+        if (!source) return;
+
+        editingSourceId = sourceId;
+        document.getElementById('sourceModalTitle').textContent = 'Edit Source';
+        document.getElementById('sourceName').value = source.name;
+        document.getElementById('sourceUrl').value = source.url;
+        document.getElementById('sourceDescription').value = source.description || '';
+        document.getElementById('sourceModal').style.display = 'block';
+    }
+
+    function closeSourceModal() {
+        document.getElementById('sourceModal').style.display = 'none';
+        editingSourceId = null;
+    }
+
+    async function toggleSource(sourceId) {
+        try {
+            const response = await fetch(`/api/sources/${sourceId}/toggle`, {
+                method: 'POST',
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error toggling source status');
+            } else {
+                alert('Source status updated successfully!');
+                await fetchSources();
+                showSourcesView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+    async function deleteSource(sourceId, sourceName) {
+        if (!confirm(`Are you sure you want to delete source "${sourceName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/sources/${sourceId}`, {
+                method: 'DELETE',
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error deleting source');
+            } else {
+                alert('Source deleted successfully!');
+                await fetchSources();
+                showSourcesView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+    // Topics management functions
+    async function fetchTopics() {
+        try {
+            const response = await fetch('/api/topics');
+            const data = await response.json();
+            allTopics = Array.isArray(data) ? data : [];
+            updateTopicCount();
+            return data;
+        } catch (error) {
+            console.error('Error fetching topics:', error);
+            allTopics = [];
+            return [];
+        }
+    }
+
+    function updateTopicCount() {
+        const topicCountElement = document.getElementById('topic-count');
+        if (topicCountElement) {
+            topicCountElement.textContent = allTopics.length;
+        }
+    }
+
+    async function showTopicsView() {
+        hideFilters();
+        const articlesGrid = document.querySelector('.articles-grid');
+        const topicsViewHtml = `
+            <div class="prompts-view">
+                <div class="prompts-grid">
+                    ${await generateTopicsHtml()}
+                </div>
+            </div>
+        `;
+        articlesGrid.innerHTML = topicsViewHtml;
+    }
+
+    async function generateTopicsHtml() {
+        if (!Array.isArray(allTopics) || allTopics.length === 0) {
+            return `
+                <div class="no-clients">
+                    <p>No topics found. Add your first topic to get started!</p>
+                </div>
+            `;
+        }
+
+        let topicsHtml = '';
+        for (const topic of allTopics) {
+            const isActive = topic.is_active;
+            topicsHtml += `
+                <div class="prompt-card ${isActive ? 'active' : ''}">
+                    <div class="prompt-header">
+                        <h3 class="prompt-name">${topic.name}</h3>
+                        ${isActive ? '<span class="active-badge">Active</span>' : '<span class="stat-badge">Inactive</span>'}
+                    </div>
+                    
+                    ${topic.description ? `<div class="prompt-description">${topic.description}</div>` : ''}
+
+                    <div class="prompt-actions">
+                        <button class="btn ${isActive ? 'btn-danger' : 'btn-success'}" onclick="toggleTopic(${topic.id})">${isActive ? 'Deactivate' : 'Activate'}</button>
+                        <button class="btn" onclick="editTopic(${topic.id})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteTopic(${topic.id}, '${topic.name}')">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+        return topicsHtml;
+    }
+
+    function addTopic() {
+        editingTopicId = null;
+        document.getElementById('topicModalTitle').textContent = 'Add New Topic';
+        document.getElementById('topicForm').reset();
+        document.getElementById('topicModal').style.display = 'block';
+    }
+
+    function editTopic(topicId) {
+        const topic = allTopics.find(t => t.id === topicId);
+        if (!topic) return;
+
+        editingTopicId = topicId;
+        document.getElementById('topicModalTitle').textContent = 'Edit Topic';
+        document.getElementById('topicName').value = topic.name;
+        document.getElementById('topicDescription').value = topic.description || '';
+        document.getElementById('topicModal').style.display = 'block';
+    }
+
+    function closeTopicModal() {
+        document.getElementById('topicModal').style.display = 'none';
+        editingTopicId = null;
+    }
+
+    async function toggleTopic(topicId) {
+        try {
+            const response = await fetch(`/api/topics/${topicId}/toggle`, {
+                method: 'POST',
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error toggling topic status');
+            } else {
+                alert('Topic status updated successfully!');
+                await fetchTopics();
+                showTopicsView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+    async function deleteTopic(topicId, topicName) {
+        if (!confirm(`Are you sure you want to delete topic "${topicName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/topics/${topicId}`, {
+                method: 'DELETE',
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error deleting topic');
+            } else {
+                alert('Topic deleted successfully!');
+                await fetchTopics();
+                showTopicsView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    }
+
+    // Handle source form submission
+    document.getElementById('sourceForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const sourceData = {
+            name: formData.get('name'),
+            url: formData.get('url'),
+            description: formData.get('description'),
+        };
+
+        try {
+            const url = editingSourceId ? `/api/sources/${editingSourceId}` : '/api/sources';
+            const method = editingSourceId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(sourceData),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error saving source');
+            } else {
+                alert(editingSourceId ? 'Source updated successfully!' : 'Source created successfully!');
+                closeSourceModal();
+                await fetchSources();
+                showSourcesView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    });
+
+    // Handle topic form submission
+    document.getElementById('topicForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const topicData = {
+            name: formData.get('name'),
+            description: formData.get('description'),
+        };
+
+        try {
+            const url = editingTopicId ? `/api/topics/${editingTopicId}` : '/api/topics';
+            const method = editingTopicId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(topicData),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.error || 'Error saving topic');
+            } else {
+                alert(editingTopicId ? 'Topic updated successfully!' : 'Topic created successfully!');
+                closeTopicModal();
+                await fetchTopics();
+                showTopicsView();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error. Please try again later.');
+        }
+    });
 </script>
 
 </html>
