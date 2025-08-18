@@ -773,6 +773,11 @@
             </div>
         </div>
 
+        <div class="nav-section source-section">
+            <div class="nav-title">Sources</div>
+            <!-- Dynamic source filters will be populated here -->
+        </div>
+
         <div class="nav-section quick-filter-section">
             <div class="nav-title">Quick Filters</div>
             <div class="nav-item">
@@ -1148,6 +1153,7 @@
         await fetchSources();
         await fetchTopics();
         await fetchArticles();
+        await updateLastExecutionDisplay();
         initializeFilters();
     })();
 
@@ -1200,6 +1206,8 @@
             });
         });
 
+        // Source filters - these will be added dynamically in updateSourceCounts
+        
         const clientItems = document.querySelectorAll('.nav-section:nth-last-child(2) .nav-item');
         clientItems.forEach(item => {
             item.addEventListener('click', () => {
@@ -1216,6 +1224,23 @@
                 handleConfigFilter(configText, item);
             });
         });
+    }
+
+    function handleSourceFilter(displayName, element) {
+        // Show filters section
+        showFilters();
+        setActiveNavItem(element);
+        hideAllActionButtons();
+
+        let filteredArticles = allArticles.filter(article => {
+            if (!article.unique_url) return false;
+            const baseUrl = getBaseUrlFromUniqueUrl(article.unique_url);
+            const articleDisplayName = getDisplayNameFromBaseUrl(baseUrl);
+            return articleDisplayName === displayName;
+        });
+
+        populateArticles(filteredArticles);
+        updateMainHeader(`${displayName} Articles`);
     }
 
     function handleClientFilter(filterText, element) {
@@ -1626,22 +1651,111 @@
             return articleDate < threeDaysAgo;
         }).length;
 
-        // Update DOM elements safely
-        const navItems = document.querySelectorAll('.nav-item .nav-count');
-        if (navItems.length >= 8) {
-            navItems[0].textContent = articles.length; // All Articles
-            navItems[1].textContent = hdbCount; // HDB
-            navItems[2].textContent = condoCount; // Condo
-            navItems[3].textContent = landedCount; // Landed
-            navItems[4].textContent = financeCount; // Finance
-            navItems[5].textContent = todayCount; // Today's Articles
-            navItems[6].textContent = unsharedCount; // Unshared
-            navItems[7].textContent = oldCount; // Old Content
+        // Update category and quick filter counts
+        const categoryItems = document.querySelectorAll('.category-section .nav-item .nav-count');
+        if (categoryItems.length >= 5) {
+            categoryItems[0].textContent = articles.length; // All Articles
+            categoryItems[1].textContent = hdbCount; // HDB
+            categoryItems[2].textContent = condoCount; // Condo
+            categoryItems[3].textContent = landedCount; // Landed
+            categoryItems[4].textContent = financeCount; // Finance
         }
+
+        const quickFilterItems = document.querySelectorAll('.quick-filter-section .nav-item .nav-count');
+        if (quickFilterItems.length >= 3) {
+            quickFilterItems[0].textContent = todayCount; // Today's Articles
+            quickFilterItems[1].textContent = unsharedCount; // Unshared
+            quickFilterItems[2].textContent = oldCount; // Old Content
+        }
+
+        // Update source counts
+        updateSourceCounts(articles);
 
         const clientCountElement = document.querySelector('.nav-section:last-child .nav-count');
         if (clientCountElement && Array.isArray(allClients)) {
             clientCountElement.textContent = allClients.length;
+        }
+    }
+
+    function updateSourceCounts(articles) {
+        // Get unique base URLs from articles' unique_url field and their counts
+        const baseUrlCounts = {};
+        articles.forEach(article => {
+            if (article.unique_url) {
+                const baseUrl = getBaseUrlFromUniqueUrl(article.unique_url);
+                const displayName = getDisplayNameFromBaseUrl(baseUrl);
+                if (displayName) {
+                    baseUrlCounts[displayName] = (baseUrlCounts[displayName] || 0) + 1;
+                }
+            }
+        });
+
+        // Populate source section
+        const sourceSection = document.querySelector('.source-section');
+        const sourceTitle = sourceSection.querySelector('.nav-title');
+        
+        // Clear existing source items
+        sourceSection.innerHTML = '<div class="nav-title">Sources</div>';
+        
+        // Add source filter items
+        Object.entries(baseUrlCounts).forEach(([displayName, count]) => {
+            const sourceItem = document.createElement('div');
+            sourceItem.className = 'nav-item';
+            sourceItem.innerHTML = `
+                <span>${displayName}</span>
+                <span class="nav-count">${count}</span>
+            `;
+            sourceSection.appendChild(sourceItem);
+        });
+
+        // Add event listeners to new source items
+        const sourceItems = sourceSection.querySelectorAll('.nav-item');
+        sourceItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const displayName = item.querySelector('span:first-child').textContent;
+                handleSourceFilter(displayName, item);
+            });
+        });
+    }
+
+    function getBaseUrlFromUniqueUrl(uniqueUrl) {
+        try {
+            // Extract hostname from unique_url
+            if (uniqueUrl && (uniqueUrl.startsWith('http://') || uniqueUrl.startsWith('https://'))) {
+                const url = new URL(uniqueUrl);
+                return url.hostname.toLowerCase();
+            } else {
+                return null;
+            }
+        } catch (error) {
+            // If URL parsing fails, return null
+            return null;
+        }
+    }
+
+    function getDisplayNameFromBaseUrl(baseUrl) {
+        // Convert base URLs to readable display names
+        baseUrl = baseUrl.replace('www.', '');
+        
+        if (baseUrl.includes('stackedhomes')) {
+            return 'StackedHomes';
+        } else if (baseUrl.includes('edgeprop')) {
+            return 'EdgeProp';
+        } else if (baseUrl.includes('propertyguru')) {
+            return 'PropertyGuru';
+        } else if (baseUrl.includes('straitstimes')) {
+            return 'Straits Times';
+        } else if (baseUrl.includes('channelnewsasia') || baseUrl.includes('cna')) {
+            return 'CNA';
+        } else {
+            // For unknown domains, capitalize first letter and remove common extensions
+            return baseUrl
+                .replace('.com', '')
+                .replace('.sg', '')
+                .replace('.net', '')
+                .replace('.org', '')
+                .split('.')[0]
+                .charAt(0).toUpperCase() + baseUrl.split('.')[0].slice(1);
         }
     }
 
@@ -1775,6 +1889,7 @@
         <div class="article-meta">
           <span>🏘️ ${article.topic || 'Unknown'}</span>
           <span>📅 ${formattedDate}</span>
+          <span>📰 ${article.source || 'Unknown Source'}</span>
         </div>
 
         <p class="article-content">
@@ -2644,6 +2759,35 @@
             alert('Network error. Please try again later.');
         }
     });
+
+    // Function to fetch and update last execution time display
+    async function updateLastExecutionDisplay() {
+        try {
+            const response = await fetch('/api/last-execution');
+            const data = await response.json();
+            
+            const lastExecutionElement = document.querySelector('.header-subtitle');
+            if (lastExecutionElement && data.lastExecution) {
+                const lastExecutionDate = new Date(data.lastExecution);
+                const formattedTime = lastExecutionDate.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                const formattedDate = lastExecutionDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                lastExecutionElement.textContent = `${formattedDate} • Last updated: ${formattedTime}`;
+            }
+        } catch (error) {
+            console.error('Error fetching last execution time:', error);
+            // Keep the existing hardcoded text if API fails
+        }
+    }
 </script>
 
 </html>

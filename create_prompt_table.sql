@@ -28,6 +28,12 @@ CREATE TABLE IF NOT EXISTS topics (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS system_settings (
+    setting_key VARCHAR(255) PRIMARY KEY,
+    setting_value TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Insert default sources
 INSERT INTO sources (name, url, description, is_active) VALUES
 ('StackedHomes', 'https://stackedhomes.com/', 'Singapore property news and analysis', 1),

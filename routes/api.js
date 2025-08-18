@@ -22,6 +22,7 @@ import {
   updateTopic,
   toggleTopicStatus,
   deleteTopic,
+  getLastExecutionTime,
 } from "../database/index.js";
 const router = express.Router();
 
@@ -353,6 +354,15 @@ router
       res.status(200).json({ message: "Topic deleted successfully" });
     } catch (error) {
       console.error("Error deleting topic:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  })
+  .get("/last-execution", async (req, res) => {
+    try {
+      const lastExecution = await getLastExecutionTime();
+      res.status(200).json({ lastExecution });
+    } catch (error) {
+      console.error("Error fetching last execution time:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   });

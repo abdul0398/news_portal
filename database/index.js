@@ -12,14 +12,18 @@ const pool = mysql.createPool({
 });
 
 export async function saveNewsToDB() {
+  // Update last execution time at the start of the function
+  await updateLastExecutionTime();
+
   // Get dynamic topics and sources, fallback to defaults if none exist
   const topics = await getActiveTopics();
   const sources = await getActiveSources();
 
   // Get the active prompt template
   const activePrompt = await getActivePromptTemplate();
-  const promptTemplate = activePrompt ? activePrompt.template : 
-    `Search for the latest news from {source} about {topic} in Singapore from the last 7 days. Return EXACTLY 10 news articles as a JSON array. Each article must be a JSON object with these exact fields: "title", "description", "date", "source", "canonical_url". Return ONLY the JSON array, no additional text or explanation. Example format: [{"title":"Article Title","description":"Article description","date":"2024-01-15","source":"Source Name","canonical_url":"https://example.com/article"}]`;
+  const promptTemplate = activePrompt
+    ? activePrompt.template
+    : `Search for the latest news from {source} about {topic} in Singapore from the last 3 days and Skip the articles which are paid. Return EXACTLY 10 news articles as a JSON array. Each article must be a JSON object with these exact fields: "title", "description", "date", "source", "canonical_url". Return ONLY the JSON array, no additional text or explanation. Example format: [{"title":"Article Title","description":"Article description","date":"2024-01-15","source":"Source Name","canonical_url":"https://example.com/article"}]`;
 
   for (const topic of topics) {
     for (const source of sources) {
@@ -27,15 +31,15 @@ export async function saveNewsToDB() {
       const customizedPrompt = promptTemplate
         .replace(/{source}/g, source)
         .replace(/{topic}/g, topic);
-      
+
       // Add JSON enforcement to the prompt if not already present
       const enhancedPrompt = enhancePromptForJSON(customizedPrompt);
-      
+
       const response = await fetchNews(enhancedPrompt);
 
       // Try to extract and parse JSON with multiple fallback strategies
       const newsList = await extractNewsFromResponse(response, source, topic);
-      
+
       if (!newsList || newsList.length === 0) {
         console.error(
           `No valid news articles extracted from response for ${source} - ${topic}.`
@@ -282,7 +286,9 @@ export async function deleteClientById(clientId) {
 // Prompt management functions
 export async function getPromptTemplates() {
   try {
-    const [rows] = await pool.query("SELECT * FROM prompt_templates ORDER BY created_at DESC");
+    const [rows] = await pool.query(
+      "SELECT * FROM prompt_templates ORDER BY created_at DESC"
+    );
     return rows;
   } catch (error) {
     console.error("Error fetching prompt templates:", error);
@@ -304,7 +310,8 @@ export async function getActivePromptTemplate() {
 
 export async function createPromptTemplate(name, template, description = null) {
   try {
-    const sql = "INSERT INTO prompt_templates (name, template, description, is_active, created_at) VALUES (?, ?, ?, 0, NOW())";
+    const sql =
+      "INSERT INTO prompt_templates (name, template, description, is_active, created_at) VALUES (?, ?, ?, 0, NOW())";
     const [result] = await pool.query(sql, [name, template, description]);
     return result.insertId;
   } catch (error) {
@@ -335,13 +342,15 @@ export async function setActivePromptTemplate(id) {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    
+
     // Deactivate all templates
     await conn.query("UPDATE prompt_templates SET is_active = 0");
-    
+
     // Activate the selected template
-    await conn.query("UPDATE prompt_templates SET is_active = 1 WHERE id = ?", [id]);
-    
+    await conn.query("UPDATE prompt_templates SET is_active = 1 WHERE id = ?", [
+      id,
+    ]);
+
     await conn.commit();
     return true;
   } catch (error) {
@@ -355,7 +364,10 @@ export async function setActivePromptTemplate(id) {
 
 export async function deletePromptTemplate(id) {
   try {
-    const [result] = await pool.query("DELETE FROM prompt_templates WHERE id = ?", [id]);
+    const [result] = await pool.query(
+      "DELETE FROM prompt_templates WHERE id = ?",
+      [id]
+    );
     return result.affectedRows > 0;
   } catch (error) {
     console.error("Error deleting prompt template:", error);
@@ -366,7 +378,9 @@ export async function deletePromptTemplate(id) {
 // Sources management functions
 export async function getSources() {
   try {
-    const [rows] = await pool.query("SELECT * FROM sources ORDER BY created_at DESC");
+    const [rows] = await pool.query(
+      "SELECT * FROM sources ORDER BY created_at DESC"
+    );
     return rows;
   } catch (error) {
     console.error("Error fetching sources:", error);
@@ -376,9 +390,11 @@ export async function getSources() {
 
 export async function getActiveSources() {
   try {
-    const [rows] = await pool.query("SELECT url FROM sources WHERE is_active = 1");
+    const [rows] = await pool.query(
+      "SELECT url FROM sources WHERE is_active = 1"
+    );
     if (rows.length > 0) {
-      return rows.map(row => row.url);
+      return rows.map((row) => row.url);
     }
     // Return default sources if none are configured
     return ["https://stackedhomes.com/", "https://www.edgeprop.sg/"];
@@ -390,7 +406,8 @@ export async function getActiveSources() {
 
 export async function createSource(name, url, description = null) {
   try {
-    const sql = "INSERT INTO sources (name, url, description, is_active, created_at) VALUES (?, ?, ?, 1, NOW())";
+    const sql =
+      "INSERT INTO sources (name, url, description, is_active, created_at) VALUES (?, ?, ?, 1, NOW())";
     const [result] = await pool.query(sql, [name, url, description]);
     return result.insertId;
   } catch (error) {
@@ -419,7 +436,9 @@ export async function updateSource(id, data) {
 
 export async function toggleSourceStatus(id) {
   try {
-    await pool.query("UPDATE sources SET is_active = !is_active WHERE id = ?", [id]);
+    await pool.query("UPDATE sources SET is_active = !is_active WHERE id = ?", [
+      id,
+    ]);
     return true;
   } catch (error) {
     console.error("Error toggling source status:", error);
@@ -440,7 +459,9 @@ export async function deleteSource(id) {
 // Topics management functions
 export async function getTopics() {
   try {
-    const [rows] = await pool.query("SELECT * FROM topics ORDER BY created_at DESC");
+    const [rows] = await pool.query(
+      "SELECT * FROM topics ORDER BY created_at DESC"
+    );
     return rows;
   } catch (error) {
     console.error("Error fetching topics:", error);
@@ -450,9 +471,11 @@ export async function getTopics() {
 
 export async function getActiveTopics() {
   try {
-    const [rows] = await pool.query("SELECT name FROM topics WHERE is_active = 1");
+    const [rows] = await pool.query(
+      "SELECT name FROM topics WHERE is_active = 1"
+    );
     if (rows.length > 0) {
-      return rows.map(row => row.name);
+      return rows.map((row) => row.name);
     }
     // Return default topics if none are configured
     return ["HDB", "Condo", "Landed", "Finance"];
@@ -464,7 +487,8 @@ export async function getActiveTopics() {
 
 export async function createTopic(name, description = null) {
   try {
-    const sql = "INSERT INTO topics (name, description, is_active, created_at) VALUES (?, ?, 1, NOW())";
+    const sql =
+      "INSERT INTO topics (name, description, is_active, created_at) VALUES (?, ?, 1, NOW())";
     const [result] = await pool.query(sql, [name, description]);
     return result.insertId;
   } catch (error) {
@@ -493,7 +517,9 @@ export async function updateTopic(id, data) {
 
 export async function toggleTopicStatus(id) {
   try {
-    await pool.query("UPDATE topics SET is_active = !is_active WHERE id = ?", [id]);
+    await pool.query("UPDATE topics SET is_active = !is_active WHERE id = ?", [
+      id,
+    ]);
     return true;
   } catch (error) {
     console.error("Error toggling topic status:", error);
@@ -514,7 +540,7 @@ export async function deleteTopic(id) {
 // Robust JSON extraction function with multiple fallback strategies
 export async function extractNewsFromResponse(response, source, topic) {
   console.log(`Processing response for ${source} - ${topic}`);
-  
+
   // Strategy 1: Try to find JSON array in response
   const jsonArrayMatch = response.match(/\[\s*{[\s\S]*?}\s*\]/);
   if (jsonArrayMatch) {
@@ -523,12 +549,17 @@ export async function extractNewsFromResponse(response, source, topic) {
       if (Array.isArray(parsed) && parsed.length > 0) {
         const validated = validateAndCleanNewsArray(parsed, source);
         if (validated.length > 0) {
-          console.log(`Strategy 1 success: Found ${validated.length} articles via JSON array match`);
+          console.log(
+            `Strategy 1 success: Found ${validated.length} articles via JSON array match`
+          );
           return validated;
         }
       }
     } catch (error) {
-      console.log("Strategy 1 failed: JSON array match found but parsing failed", error.message);
+      console.log(
+        "Strategy 1 failed: JSON array match found but parsing failed",
+        error.message
+      );
     }
   }
 
@@ -549,7 +580,9 @@ export async function extractNewsFromResponse(response, source, topic) {
     if (objects.length > 0) {
       const validated = validateAndCleanNewsArray(objects, source);
       if (validated.length > 0) {
-        console.log(`Strategy 2 success: Found ${validated.length} articles via multiple JSON objects`);
+        console.log(
+          `Strategy 2 success: Found ${validated.length} articles via multiple JSON objects`
+        );
         return validated;
       }
     }
@@ -561,13 +594,17 @@ export async function extractNewsFromResponse(response, source, topic) {
     if (Array.isArray(parsed)) {
       const validated = validateAndCleanNewsArray(parsed, source);
       if (validated.length > 0) {
-        console.log(`Strategy 3 success: Found ${validated.length} articles via full JSON parse`);
+        console.log(
+          `Strategy 3 success: Found ${validated.length} articles via full JSON parse`
+        );
         return validated;
       }
     } else if (parsed.articles && Array.isArray(parsed.articles)) {
       const validated = validateAndCleanNewsArray(parsed.articles, source);
       if (validated.length > 0) {
-        console.log(`Strategy 3 success: Found ${validated.length} articles via nested articles array`);
+        console.log(
+          `Strategy 3 success: Found ${validated.length} articles via nested articles array`
+        );
         return validated;
       }
     }
@@ -578,9 +615,15 @@ export async function extractNewsFromResponse(response, source, topic) {
   // Strategy 4: Use AI to convert non-JSON response to JSON
   console.log("All JSON strategies failed, attempting AI conversion...");
   try {
-    const convertedResponse = await convertResponseToJSON(response, source, topic);
+    const convertedResponse = await convertResponseToJSON(
+      response,
+      source,
+      topic
+    );
     if (convertedResponse && convertedResponse.length > 0) {
-      console.log(`Strategy 4 success: AI converted response to ${convertedResponse.length} articles`);
+      console.log(
+        `Strategy 4 success: AI converted response to ${convertedResponse.length} articles`
+      );
       return convertedResponse;
     }
   } catch (error) {
@@ -591,7 +634,9 @@ export async function extractNewsFromResponse(response, source, topic) {
   console.log("Attempting regex-based extraction...");
   const extractedArticles = extractArticlesWithRegex(response, source, topic);
   if (extractedArticles.length > 0) {
-    console.log(`Strategy 5 success: Regex extracted ${extractedArticles.length} articles`);
+    console.log(
+      `Strategy 5 success: Regex extracted ${extractedArticles.length} articles`
+    );
     return extractedArticles;
   }
 
@@ -602,15 +647,29 @@ export async function extractNewsFromResponse(response, source, topic) {
 // Validate and clean news array to ensure consistent format
 function validateAndCleanNewsArray(articles, source) {
   if (!Array.isArray(articles)) return [];
-  
+
   return articles
-    .filter(article => article && (article.title || article.headline))
-    .map(article => ({
-      title: article.title || article.headline || 'Untitled',
-      description: article.description || article.summary || article.content || 'No description available',
-      date: article.date || article.published_date || article.publishedAt || article.created_at || new Date().toISOString(),
-      source: article.source || source || 'Unknown Source',
-      canonical_url: article.canonical_url || article.url || article.link || article.href || '#'
+    .filter((article) => article && (article.title || article.headline))
+    .map((article) => ({
+      title: article.title || article.headline || "Untitled",
+      description:
+        article.description ||
+        article.summary ||
+        article.content ||
+        "No description available",
+      date:
+        article.date ||
+        article.published_date ||
+        article.publishedAt ||
+        article.created_at ||
+        new Date().toISOString(),
+      source: article.source || source || "Unknown Source",
+      canonical_url:
+        article.canonical_url ||
+        article.url ||
+        article.link ||
+        article.href ||
+        "#",
     }))
     .slice(0, 10); // Limit to 10 articles max
 }
@@ -618,17 +677,17 @@ function validateAndCleanNewsArray(articles, source) {
 // Convert non-JSON response to JSON using AI
 async function convertResponseToJSON(response, source, topic) {
   try {
-    const { fetchNews } = await import('../vendors/sonar.js');
-    
+    const { fetchNews } = await import("../vendors/sonar.js");
+
     const conversionPrompt = `Convert the following text about ${topic} news from ${source} into a JSON array format. 
     Extract any news articles mentioned and format them as JSON objects with these fields: title, description, date, source, canonical_url.
     Return ONLY the JSON array, no additional text.
     
     Text to convert:
     ${response.substring(0, 2000)}`;
-    
+
     const convertedResponse = await fetchNews(conversionPrompt);
-    
+
     // Try to extract JSON from the converted response
     const jsonMatch = convertedResponse.match(/\[\s*{[\s\S]*?}\s*\]/);
     if (jsonMatch) {
@@ -644,7 +703,7 @@ async function convertResponseToJSON(response, source, topic) {
 // Extract articles using regex patterns as last resort
 function extractArticlesWithRegex(response, source, topic) {
   const articles = [];
-  
+
   // Common patterns for news articles in text
   const patterns = [
     // Pattern 1: Title: ... Description: ... Date: ... URL: ...
@@ -652,21 +711,21 @@ function extractArticlesWithRegex(response, source, topic) {
     // Pattern 2: 1. Title - Description (Date) [URL]
     /\d+\.\s*([^-\n]+)\s*-\s*([^\n(]+)\s*\(([^)]+)\)\s*\[([^\]]+)\]/gi,
     // Pattern 3: ## Title Description Date: ... Source: ...
-    /##\s*([^\n]+)\s*([^\n]+)\s*Date:\s*([^\n]+)\s*Source:\s*([^\n]+)/gi
+    /##\s*([^\n]+)\s*([^\n]+)\s*Date:\s*([^\n]+)\s*Source:\s*([^\n]+)/gi,
   ];
 
   for (const pattern of patterns) {
     let match;
     while ((match = pattern.exec(response)) !== null && articles.length < 10) {
       articles.push({
-        title: match[1] ? match[1].trim() : 'Untitled',
-        description: match[2] ? match[2].trim() : 'No description available',
+        title: match[1] ? match[1].trim() : "Untitled",
+        description: match[2] ? match[2].trim() : "No description available",
         date: match[3] ? match[3].trim() : new Date().toISOString(),
-        source: source || 'Unknown Source',
-        canonical_url: match[4] ? match[4].trim() : '#'
+        source: source || "Unknown Source",
+        canonical_url: match[4] ? match[4].trim() : "#",
       });
     }
-    
+
     if (articles.length > 0) break; // Stop if we found articles with this pattern
   }
 
@@ -674,22 +733,27 @@ function extractArticlesWithRegex(response, source, topic) {
   if (articles.length === 0) {
     const urlPattern = /https?:\/\/[^\s\n\])}]+/gi;
     const urls = response.match(urlPattern) || [];
-    
+
     // Try to find text around URLs that might be titles
     for (let i = 0; i < Math.min(urls.length, 5); i++) {
       const url = urls[i];
       const urlIndex = response.indexOf(url);
-      
+
       // Look for title-like text before the URL (within 200 characters)
-      const beforeUrl = response.substring(Math.max(0, urlIndex - 200), urlIndex);
+      const beforeUrl = response.substring(
+        Math.max(0, urlIndex - 200),
+        urlIndex
+      );
       const titleMatch = beforeUrl.match(/([^.\n]{10,100})[\s\n]*$/);
-      
+
       articles.push({
-        title: titleMatch ? titleMatch[1].trim() : `${topic} News Article ${i + 1}`,
+        title: titleMatch
+          ? titleMatch[1].trim()
+          : `${topic} News Article ${i + 1}`,
         description: `News article about ${topic} from ${source}`,
         date: new Date().toISOString(),
-        source: source || 'Unknown Source',
-        canonical_url: url
+        source: source || "Unknown Source",
+        canonical_url: url,
       });
     }
   }
@@ -701,20 +765,45 @@ function extractArticlesWithRegex(response, source, topic) {
 export function enhancePromptForJSON(prompt) {
   // Check if prompt already has JSON instructions
   const hasJSONInstructions = /json|JSON|\[|\{/.test(prompt);
-  
+
   if (!hasJSONInstructions) {
     // Add JSON formatting instructions if not present
     return `${prompt}
 
 IMPORTANT: Return the response as a JSON array. Each news article should be a JSON object with these fields: "title", "description", "date", "source", "canonical_url". Example: [{"title":"Title","description":"Description","date":"2024-01-15","source":"Source","canonical_url":"https://example.com"}]`;
   }
-  
+
   // If JSON instructions are present but might be weak, strengthen them
-  if (!prompt.includes('ONLY') && !prompt.includes('exactly')) {
+  if (!prompt.includes("ONLY") && !prompt.includes("exactly")) {
     return `${prompt}
 
 CRITICAL: Return ONLY the JSON array, no additional text or explanation.`;
   }
-  
+
   return prompt;
+}
+
+// Functions to manage last execution time
+export async function updateLastExecutionTime() {
+  try {
+    const now = new Date();
+    await pool.query(
+      "INSERT INTO system_settings (setting_key, setting_value) VALUES ('last_news_fetch', ?) ON DUPLICATE KEY UPDATE setting_value = ?",
+      [now.toISOString(), now.toISOString()]
+    );
+  } catch (error) {
+    console.error("Error updating last execution time:", error);
+  }
+}
+
+export async function getLastExecutionTime() {
+  try {
+    const [rows] = await pool.query(
+      "SELECT setting_value FROM system_settings WHERE setting_key = 'last_news_fetch' LIMIT 1"
+    );
+    return rows.length > 0 ? rows[0].setting_value : null;
+  } catch (error) {
+    console.error("Error fetching last execution time:", error);
+    return null;
+  }
 }
