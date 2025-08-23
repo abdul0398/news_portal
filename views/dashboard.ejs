@@ -831,8 +831,10 @@
             </div>
             <div class="header-actions">
                 <button class="btn" onclick="exportToCSV()">Export Report</button>
-                <button class="btn" onclick="addPrompt()" id="add-prompt-btn" style="display:none;">+ Add Prompt</button>
-                <button class="btn" onclick="addSource()" id="add-source-btn" style="display:none;">+ Add Source</button>
+                <button class="btn" onclick="addPrompt()" id="add-prompt-btn" style="display:none;">+ Add
+                    Prompt</button>
+                <button class="btn" onclick="addSource()" id="add-source-btn" style="display:none;">+ Add
+                    Source</button>
                 <button class="btn" onclick="addTopic()" id="add-topic-btn" style="display:none;">+ Add Topic</button>
                 <button class="btn btn-primary" onclick="addClient()">+ Add Client</button>
             </div>
@@ -1060,19 +1062,23 @@
                 </div>
                 <div class="form-group">
                     <label for="promptTemplate">Prompt Template</label>
-                    <textarea id="promptTemplate" name="template" required placeholder="Search for the latest news from {source} about {topic} in Singapore from the last 7 days. Return EXACTLY 10 news articles as a JSON array. Each article must be a JSON object with these exact fields: &quot;title&quot;, &quot;description&quot;, &quot;date&quot;, &quot;source&quot;, &quot;canonical_url&quot;. Return ONLY the JSON array, no additional text or explanation."></textarea>
-                    <div class="help-text">Use {source} and {topic} as placeholders. <strong>Important:</strong> Always include instructions to return JSON format for reliable data processing.</div>
+                    <textarea id="promptTemplate" name="template" required
+                        placeholder="Search for the latest news from {source} about {topic} in Singapore from the last 7 days. Return EXACTLY 10 news articles as a JSON array. Each article must be a JSON object with these exact fields: &quot;title&quot;, &quot;description&quot;, &quot;date&quot;, &quot;source&quot;, &quot;canonical_url&quot;. Return ONLY the JSON array, no additional text or explanation."></textarea>
+                    <div class="help-text">Use {source} and {topic} as placeholders. <strong>Important:</strong> Always
+                        include instructions to return JSON format for reliable data processing.</div>
                 </div>
                 <div class="form-group">
                     <label for="promptDescription">Description (Optional)</label>
-                    <textarea id="promptDescription" name="description" placeholder="Describe what this prompt is for..."></textarea>
+                    <textarea id="promptDescription" name="description"
+                        placeholder="Describe what this prompt is for..."></textarea>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn" onclick="closePromptModal()">Cancel</button>
                     <button type="button" class="btn" onclick="testPrompt()" id="testPromptBtn">Test Prompt</button>
                     <button type="submit" class="btn btn-primary">Save Prompt</button>
                 </div>
-                <div id="testResults" style="display:none; margin-top:20px; padding:15px; background:#f8f9fa; border-radius:6px;">
+                <div id="testResults"
+                    style="display:none; margin-top:20px; padding:15px; background:#f8f9fa; border-radius:6px;">
                     <h4>Test Results:</h4>
                     <div id="testResultsContent"></div>
                 </div>
@@ -1100,7 +1106,8 @@
                 </div>
                 <div class="form-group">
                     <label for="sourceDescription">Description (Optional)</label>
-                    <textarea id="sourceDescription" name="description" placeholder="Describe what type of content this source provides..."></textarea>
+                    <textarea id="sourceDescription" name="description"
+                        placeholder="Describe what type of content this source provides..."></textarea>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn" onclick="closeSourceModal()">Cancel</button>
@@ -1125,7 +1132,8 @@
                 </div>
                 <div class="form-group">
                     <label for="topicDescription">Description (Optional)</label>
-                    <textarea id="topicDescription" name="description" placeholder="Describe what this topic covers..."></textarea>
+                    <textarea id="topicDescription" name="description"
+                        placeholder="Describe what this topic covers..."></textarea>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn" onclick="closeTopicModal()">Cancel</button>
@@ -1207,7 +1215,7 @@
         });
 
         // Source filters - these will be added dynamically in updateSourceCounts
-        
+
         const clientItems = document.querySelectorAll('.nav-section:nth-last-child(2) .nav-item');
         clientItems.forEach(item => {
             item.addEventListener('click', () => {
@@ -1693,10 +1701,10 @@
         // Populate source section
         const sourceSection = document.querySelector('.source-section');
         const sourceTitle = sourceSection.querySelector('.nav-title');
-        
+
         // Clear existing source items
         sourceSection.innerHTML = '<div class="nav-title">Sources</div>';
-        
+
         // Add source filter items
         Object.entries(baseUrlCounts).forEach(([displayName, count]) => {
             const sourceItem = document.createElement('div');
@@ -1735,8 +1743,9 @@
 
     function getDisplayNameFromBaseUrl(baseUrl) {
         // Convert base URLs to readable display names
-        baseUrl = baseUrl.replace('www.', '');
-        
+        if (!baseUrl) return 'StackedHomes'
+        baseUrl = baseUrl?.replace('www.', '');
+
         if (baseUrl.includes('stackedhomes')) {
             return 'StackedHomes';
         } else if (baseUrl.includes('edgeprop')) {
@@ -2048,7 +2057,7 @@
 
         const unwantedTravelDestinations = [
             'Amalfi Coast',
-            'Amsterdam', 
+            'Amsterdam',
             'Antigua',
             'Antiparos,greece',
             'Arosa, switzerland',
@@ -2080,7 +2089,7 @@
             const descriptionText = (article.description || '').toLowerCase();
             const combinedText = titleText + ' ' + descriptionText;
 
-            return !unwantedTravelDestinations.some(destination => 
+            return !unwantedTravelDestinations.some(destination =>
                 combinedText.includes(destination.toLowerCase())
             );
         });
@@ -2103,7 +2112,7 @@
         // CSV headers
         const headers = [
             'Title',
-            'Description', 
+            'Description',
             'Topic',
             'Date Created',
             'URL',
@@ -2147,16 +2156,16 @@
         // Create and download the file
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
-        
+
         if (link.download !== undefined) {
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            
+
             // Generate filename with current date
             const now = new Date();
             const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
             link.setAttribute('download', `news_report_${dateStr}.csv`);
-            
+
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
@@ -2287,7 +2296,7 @@
             });
 
             const data = await response.json();
-            
+
             if (data.success) {
                 testResultsContent.innerHTML = `
                     <div style="color:#28a745; margin-bottom:10px;">✅ Prompt test successful!</div>
@@ -2367,7 +2376,7 @@
     // Handle prompt form submission
     document.getElementById('promptForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const formData = new FormData(e.target);
         const promptData = {
             name: formData.get('name'),
@@ -2378,7 +2387,7 @@
         try {
             const url = editingPromptId ? `/api/prompts/${editingPromptId}` : '/api/prompts';
             const method = editingPromptId ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -2688,7 +2697,7 @@
     // Handle source form submission
     document.getElementById('sourceForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const formData = new FormData(e.target);
         const sourceData = {
             name: formData.get('name'),
@@ -2699,7 +2708,7 @@
         try {
             const url = editingSourceId ? `/api/sources/${editingSourceId}` : '/api/sources';
             const method = editingSourceId ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -2726,7 +2735,7 @@
     // Handle topic form submission
     document.getElementById('topicForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const formData = new FormData(e.target);
         const topicData = {
             name: formData.get('name'),
@@ -2736,7 +2745,7 @@
         try {
             const url = editingTopicId ? `/api/topics/${editingTopicId}` : '/api/topics';
             const method = editingTopicId ? 'PUT' : 'POST';
-            
+
             const response = await fetch(url, {
                 method: method,
                 headers: {
@@ -2765,7 +2774,7 @@
         try {
             const response = await fetch('/api/last-execution');
             const data = await response.json();
-            
+
             const lastExecutionElement = document.querySelector('.header-subtitle');
             if (lastExecutionElement && data.lastExecution) {
                 const lastExecutionDate = new Date(data.lastExecution);
@@ -2780,7 +2789,7 @@
                     month: 'long',
                     day: 'numeric'
                 });
-                
+
                 lastExecutionElement.textContent = `${formattedDate} • Last updated: ${formattedTime}`;
             }
         } catch (error) {
