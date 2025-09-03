@@ -23,11 +23,15 @@ import {
   toggleTopicStatus,
   deleteTopic,
   getLastExecutionTime,
+  createAdminSession,
+  deleteAdminSession,
+  cleanExpiredSessions,
 } from "../database/index.js";
+import { requireAuth, validateAdminCredentials } from "../middleware/auth.js";
 const router = express.Router();
 
 router
-  .get("/articles", async (req, res) => {
+  .get("/articles", requireAuth, async (req, res) => {
     try {
       const news = await getNews();
       res.status(200).json(news);
@@ -35,7 +39,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/client", async (req, res) => {
+  .post("/client", requireAuth, async (req, res) => {
     try {
       const name = req.body.name;
       if (!name || name.length < 2)
@@ -51,7 +55,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .get("/clients", async (req, res) => {
+  .get("/clients", requireAuth, async (req, res) => {
     try {
       const clients = await getClients();
       res.status(200).json(clients);
@@ -59,7 +63,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/client/:clientId/article/:articleId", async (req, res) => {
+  .post("/client/:clientId/article/:articleId", requireAuth, async (req, res) => {
     try {
       const clientId = req.params.clientId;
       const articleId = req.params.articleId;
@@ -71,7 +75,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .delete("/client/:clientId", async (req, res) => {
+  .delete("/client/:clientId", requireAuth, async (req, res) => {
     try {
       const clientId = req.params.clientId;
       const success = await deleteClientById(clientId);
@@ -86,7 +90,7 @@ router
       return res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .get("/prompts", async (req, res) => {
+  .get("/prompts", requireAuth, async (req, res) => {
     try {
       const prompts = await getPromptTemplates();
       res.status(200).json(prompts);
@@ -95,7 +99,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .get("/prompts/active", async (req, res) => {
+  .get("/prompts/active", requireAuth, async (req, res) => {
     try {
       const activePrompt = await getActivePromptTemplate();
       res.status(200).json(activePrompt);
@@ -104,7 +108,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/prompts", async (req, res) => {
+  .post("/prompts", requireAuth, async (req, res) => {
     try {
       const { name, template, description } = req.body;
       if (!name || !template) {
@@ -121,7 +125,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .put("/prompts/:id", async (req, res) => {
+  .put("/prompts/:id", requireAuth, async (req, res) => {
     try {
       const promptId = req.params.id;
       const updateData = req.body;
@@ -137,7 +141,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/prompts/:id/activate", async (req, res) => {
+  .post("/prompts/:id/activate", requireAuth, async (req, res) => {
     try {
       const promptId = req.params.id;
       
@@ -152,7 +156,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .delete("/prompts/:id", async (req, res) => {
+  .delete("/prompts/:id", requireAuth, async (req, res) => {
     try {
       const promptId = req.params.id;
       
@@ -167,7 +171,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/prompts/test", async (req, res) => {
+  .post("/prompts/test", requireAuth, async (req, res) => {
     try {
       const { template } = req.body;
       if (!template) {
@@ -212,7 +216,7 @@ router
     }
   })
   // Sources management endpoints
-  .get("/sources", async (req, res) => {
+  .get("/sources", requireAuth, async (req, res) => {
     try {
       const sources = await getSources();
       res.status(200).json(sources);
@@ -221,7 +225,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/sources", async (req, res) => {
+  .post("/sources", requireAuth, async (req, res) => {
     try {
       const { name, url, description } = req.body;
       if (!name || !url) {
@@ -238,7 +242,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .put("/sources/:id", async (req, res) => {
+  .put("/sources/:id", requireAuth, async (req, res) => {
     try {
       const sourceId = req.params.id;
       const updateData = req.body;
@@ -254,7 +258,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/sources/:id/toggle", async (req, res) => {
+  .post("/sources/:id/toggle", requireAuth, async (req, res) => {
     try {
       const sourceId = req.params.id;
       
@@ -269,7 +273,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .delete("/sources/:id", async (req, res) => {
+  .delete("/sources/:id", requireAuth, async (req, res) => {
     try {
       const sourceId = req.params.id;
       
@@ -285,7 +289,7 @@ router
     }
   })
   // Topics management endpoints
-  .get("/topics", async (req, res) => {
+  .get("/topics", requireAuth, async (req, res) => {
     try {
       const topics = await getTopics();
       res.status(200).json(topics);
@@ -294,7 +298,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/topics", async (req, res) => {
+  .post("/topics", requireAuth, async (req, res) => {
     try {
       const { name, description } = req.body;
       if (!name) {
@@ -311,7 +315,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .put("/topics/:id", async (req, res) => {
+  .put("/topics/:id", requireAuth, async (req, res) => {
     try {
       const topicId = req.params.id;
       const updateData = req.body;
@@ -327,7 +331,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .post("/topics/:id/toggle", async (req, res) => {
+  .post("/topics/:id/toggle", requireAuth, async (req, res) => {
     try {
       const topicId = req.params.id;
       
@@ -342,7 +346,7 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .delete("/topics/:id", async (req, res) => {
+  .delete("/topics/:id", requireAuth, async (req, res) => {
     try {
       const topicId = req.params.id;
       
@@ -357,12 +361,74 @@ router
       res.status(500).json({ error: "Internal Server Error" });
     }
   })
-  .get("/last-execution", async (req, res) => {
+  .get("/last-execution", requireAuth, async (req, res) => {
     try {
       const lastExecution = await getLastExecutionTime();
       res.status(200).json({ lastExecution });
     } catch (error) {
       console.error("Error fetching last execution time:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  })
+  // Admin authentication endpoints
+  .post("/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+
+      if (!validateAdminCredentials(username, password)) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Clean expired sessions before creating new one
+      await cleanExpiredSessions();
+
+      // Create new session
+      const sessionId = await createAdminSession(username);
+      
+      // Set session cookie
+      res.cookie('admin_session', sessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+
+      res.status(200).json({ 
+        message: "Login successful",
+        user: { username }
+      });
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  })
+  .post("/auth/logout", requireAuth, async (req, res) => {
+    try {
+      const sessionId = req.cookies?.admin_session;
+      
+      if (sessionId) {
+        await deleteAdminSession(sessionId);
+      }
+      
+      res.clearCookie('admin_session');
+      res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  })
+  .get("/auth/me", requireAuth, async (req, res) => {
+    try {
+      res.status(200).json({
+        user: { username: req.adminSession.username },
+        sessionCreated: req.adminSession.created_at
+      });
+    } catch (error) {
+      console.error("Error fetching user info:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   });

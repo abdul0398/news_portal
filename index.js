@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import cookieParser from "cookie-parser";
 const port = process.env.PORT || 3450;
 const app = express();
 import viewsRouter from "./routes/views.js";
@@ -9,6 +10,7 @@ import { saveNewsToDB } from "./database/index.js";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 app.use(express.static(path.join(process.cwd(), "public")));
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));

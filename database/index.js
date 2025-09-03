@@ -807,3 +807,60 @@ export async function getLastExecutionTime() {
     return null;
   }
 }
+
+// Admin session management functions
+export async function createAdminSession(username) {
+  try {
+    const sessionId = generateSessionId();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+    
+    await pool.query(
+      "INSERT INTO admin_sessions (id, username, expires_at) VALUES (?, ?, ?)",
+      [sessionId, username, expiresAt]
+    );
+    
+    return sessionId;
+  } catch (error) {
+    console.error("Error creating admin session:", error);
+    throw error;
+  }
+}
+
+export async function getAdminSession(sessionId) {
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM admin_sessions WHERE id = ? AND expires_at > NOW() LIMIT 1",
+      [sessionId]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+    console.error("Error fetching admin session:", error);
+    return null;
+  }
+}
+
+export async function deleteAdminSession(sessionId) {
+  try {
+    await pool.query("DELETE FROM admin_sessions WHERE id = ?", [sessionId]);
+    return true;
+  } catch (error) {
+    console.error("Error deleting admin session:", error);
+    return false;
+  }
+}
+
+export async function cleanExpiredSessions() {
+  try {
+    await pool.query("DELETE FROM admin_sessions WHERE expires_at <= NOW()");
+    return true;
+  } catch (error) {
+    console.error("Error cleaning expired sessions:", error);
+    return false;
+  }
+}
+
+function generateSessionId() {
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15) + 
+         Date.now().toString(36);
+}
