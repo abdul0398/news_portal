@@ -1,5 +1,23 @@
 import { getAdminSession } from "../database/index.js";
 
+export async function redirectIfLoggedIn(req, res, next) {
+  try {
+    const sessionId = req.cookies?.admin_session;
+    
+    if (sessionId) {
+      const session = await getAdminSession(sessionId);
+      if (session) {
+        return res.redirect('/dashboard');
+      }
+    }
+    
+    next();
+  } catch (error) {
+    console.error("redirectIfLoggedIn middleware error:", error);
+    next();
+  }
+}
+
 export async function requireAuth(req, res, next) {
   try {
     const sessionId = req.cookies?.admin_session;
@@ -39,6 +57,9 @@ export async function requireAuth(req, res, next) {
 export function validateAdminCredentials(username, password) {
   const adminUsername = process.env.ADMIN_USERNAME;
   const adminPassword = process.env.ADMIN_PASSWORD;
+  const teamUsername = process.env.TEAM_USERNAME;
+  const teamPassword = process.env.TEAM_PASSWORD;
   
-  return username === adminUsername && password === adminPassword;
+  return (username === adminUsername && password === adminPassword) ||
+         (username === teamUsername && password === teamPassword);
 }
